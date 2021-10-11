@@ -22,14 +22,14 @@ df_1List = []
 df_2List = []
 
 # get results for group 1 (all participants in one json file)
-with open('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/CLOZEresults/Group1/jatos_results_20210826185507.txt') as f:
+with open('/imaging/hauk/users/fm02/EOS_data/CLOZEresults/Group1/jatos_results_20210826185507.txt') as f:
     for jsonObj in f:
         df_1 = pd.read_json(jsonObj)
         df_1List.append(df_1)
 
 # ... and group 2
 # df = pd.read_json('U:/CLOZEresults/Group1/jatos_results_20210812170851.txt')
-with open('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/CLOZEresults/Group2/jatos_results_20210826140139.txt') as f:
+with open('/imaging/hauk/users/fm02/EOS_data/CLOZEresults/Group2/jatos_results_20210826140139.txt') as f:
     for jsonObj in f:
         df_2 = pd.read_json(jsonObj)
         df_2List.append(df_2)
@@ -401,6 +401,7 @@ for i,t in enumerate(tok):
     similarities = []
     for list_words in t:
         if list_words:
+        	# append word with max similarity in among all the responses which are present also on wv vocabulary
             similarities.append(max([wv.similarity(w,targets[i])
                                      for id_w,w in enumerate(list_words)
                                      if wv.has_index_for(w)]))
@@ -426,6 +427,7 @@ corrStimuli2 = pd.merge(corrStimuli2,sentnoquote[['PRECEDING_Frequency',
 
 # corrStimuli2.to_excel('C:/Users/User/OwnCloud/Sentences/stimuli_all_onewordsemsim.xlsx',index=False)
 
+# select only numerical  variables to plot them (e.g., no sentence or word identity)
 corrStimuli2 = corrStimuli2[['ConcM', 'LEN', 'UN2_F', 'UN3_F', 'Orth', 'OLD20',
                        'FreqCount', 'LogFreq(Zipf)', 'V_MeanSum',
                        'A_MeanSum', 'mink3_SM', 'Position',
