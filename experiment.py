@@ -344,6 +344,9 @@ for i, trial in enumerate(trials):
     
     disp.fill(stimscr)
 
+    # get the size of the stimulus on screen (centred in the middle of the screen)
+    # measures of each character is (11,23)
+
     sizestim = stimscr.screen[-1].boundingBox 
     
     # Draw the fixation screen.
@@ -403,9 +406,6 @@ for i, trial in enumerate(trials):
     disp.fill(stimscr)
     stim_onset = disp.show()
 
-    # get the size of the stimulus on screen (centred in the middle of the screen)
-    # measures of each character is (11,23)
-    # sizestim = stimscr.screen[-1].boundingBox
     # get the position of the target word INSIDE the boundingBox
     targetinsize = (trial['stimulus'].index(trial['target']), (trial['stimulus'].index(trial['target'])+len(trial['target'])))
 
