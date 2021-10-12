@@ -27,14 +27,15 @@ df_1List = []
 df_2List = []
 
 # get results for group 1 (all participants in one json file)
-with open('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/CLOZEresults/Group1/jatos_results_20210826185507.txt') as f:
+# with open('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/CLOZEresults/Group1/jatos_results_20210826185507.txt') as f:
+with open('//cbsu/data/Imaging/hauk/users/fm02/EOS_data/CLOZEresults/Group1/jatos_results_20210826185507.txt') as f:
     for jsonObj in f:
         df_1 = pd.read_json(jsonObj)
         df_1List.append(df_1)
 
 # ... and group 2
-# df = pd.read_json('U:/CLOZEresults/Group1/jatos_results_20210812170851.txt')
-with open('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/CLOZEresults/Group2/jatos_results_20210826140139.txt') as f:
+#with open('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/CLOZEresults/Group2/jatos_results_20210826140139.txt') as f:
+with open('//cbsu/data/Imaging/hauk/users/fm02/EOS_data/CLOZEresults/Group2/jatos_results_20210826140139.txt') as f:
     for jsonObj in f:
         df_2 = pd.read_json(jsonObj)
         df_2List.append(df_2)
