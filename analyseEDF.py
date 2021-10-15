@@ -127,9 +127,14 @@ def no_lookback_firstAOI(data_edf,data_plain):
             
         else:
             # consider only fixations following a the first leftmost fixation
-            while pd_fix['x'][0]>pd_fix['x'][1]:
-                pd_fix.drop([0],inplace=True)
-                pd_fix.reset_index(drop=True, inplace=True)
+
+            # !! this is now useless and potentially problematic considering that
+            # participants fixate on the left side of the screen (and not the centre)
+            # before the appearance of the sentence
+            
+            # while pd_fix['x'][0]>pd_fix['x'][1]:
+            #     pd_fix.drop([0],inplace=True)
+            #     pd_fix.reset_index(drop=True, inplace=True)
             
             # the following info is gathered from the
             # stimulus presentation software (communicated the following msgs)
@@ -471,20 +476,37 @@ stimuliALL_norm = stimuliALL[['Word','ID']].join(to_norm)
 
 # import data from the participants
 data101_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/101/101"
+data102_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/102/102"
+data103_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/103/103"
+data104_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/104/104"
+data105_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/105/105"
 
-data_dir = [data101_dir]
+
+data_dir = [data101_dir, data102_dir, data103_dir, data104_dir, data105_dir]
 
 # this is pygaze standard read_edf function
 data101 = read_edf(data101_dir+".asc","STIMONSET","STIMOFFSET")
+data102 = read_edf(data102_dir+".asc","STIMONSET","STIMOFFSET")
+data103 = read_edf(data103_dir+".asc","STIMONSET","STIMOFFSET")
+data104 = read_edf(data104_dir+".asc","STIMONSET","STIMOFFSET")
+data105 = read_edf(data105_dir+".asc","STIMONSET","STIMOFFSET")
+
+
 
 # this is a modified version of the above, which just saves the events
 # and does not separate the trials
 # we'll use it to determine trials that contain blinks 
 
 data101_plain = read_edf_plain(data101_dir+".asc")
+data102_plain = read_edf_plain(data102_dir+".asc")
+data103_plain = read_edf_plain(data103_dir+".asc")
+data104_plain = read_edf_plain(data104_dir+".asc")
+data105_plain = read_edf_plain(data105_dir+".asc")
 
-data = [data101]
-data_plain = [data101_plain]
+
+data = [data101, data102, data103, data104, data105]
+data_plain = [data101_plain, data102_plain, data103_plain, data104_plain,
+              data105_plain]
 
 # prefix nrgr = no_regressions
 nrgrdur = []
@@ -543,17 +565,20 @@ norm_wrgrfixations_all = attach_mean_centred(wrgrprfix)
 # ### HERE ARE PLOTS, uncomment if necessary
 # ###### visualization purposes only, right now only one subject (will create code for average)
 
-# ax = sns.regplot(data=nrgrffd_all[0][nrgrffd_all[0]['ms']>0], x='Sim',y='ms')
-# ax.set_title('First Fixation duration - Cloze SemanticSimilarity', fontsize = 15);
+ax = sns.regplot(data=nrgrffd_all[4][nrgrffd_all[4]['ms']>0], x='Sim',y='ms')
+ax.set_title('First Fixation duration - Cloze SemanticSimilarity', fontsize = 15);
 
-# bx = sns.regplot(data=nrgrffd_all[0][nrgrffd_all[0]['ms']>0], x='cloze',y='ms')
-# bx.set_title('First Fixation duration - Cloze', fontsize = 15);
+bx = sns.regplot(data=nrgrffd_all[4][nrgrffd_all[4]['ms']>0], x='cloze',y='ms')
+bx.set_title('First Fixation duration - Cloze', fontsize = 15);
 
-# cx = sns.regplot(data=nrgrffd_all[0][nrgrffd_all[0]['ms']>0], x='LogFreq(Zipf)',y='ms')
-# cx.set_title('First Fixation duration - LogFrequency (Zipf)', fontsize = 15);
+cx = sns.regplot(data=nrgrffd_all[4][nrgrffd_all[4]['ms']>0], x='LogFreq(Zipf)',y='ms')
+cx.set_title('First Fixation duration - LogFrequency (Zipf)', fontsize = 15);
 
-# dx = sns.regplot(data=norm_nrgrgd_all[0][norm_nrgrgd_all[0]['ms']>0], x='ConcM',y='ms')
-# dx.set_title('Gaze duration - Concreteness', fontsize = 15);
+dx = sns.regplot(data=norm_nrgrffd_all[3][norm_nrgrffd_all[3]['ms']>0], x='ConcM',y='ms')
+dx.set_title('First Fixation duration - Concreteness', fontsize = 15);
+
+ex = sns.regplot(data=norm_nrgrffd_all[3][norm_nrgrffd_all[3]['ms']>0], x='mink3_SM', y='ms')
+ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
 
 # ########### WORK IN PROGRESS ##############
 # # ax = sns.regplot(data=Nffd_all[3], x='Predictability',y='ms')
