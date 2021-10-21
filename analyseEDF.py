@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun 10 11:01:09 2021
+Created on Thu Jun 10 11:01:0[9] 2021
 
 @author: magna.fede
 """
@@ -29,7 +29,18 @@ from pygazeanalyser.edfreader import read_edf
 DISPSIZE = (1280, 1024)
 
 # when talking about pixels, x,y=(0,0) is the top-left corner
-# 
+#
+
+# trials to exclude because of errors during recording 
+# (usually this means that the recording started before calibration)
+# (key=subject_ID : values=trials_ID)
+# consider that you should start counting trials from zero
+
+exclude = {111:[120,121]}
+
+
+
+ 
 def get_blinks(data_edf):
     blinks=[]
     for i,trial in enumerate(data_edf):
@@ -37,6 +48,9 @@ def get_blinks(data_edf):
         blinks = [x for x in blinks if x != []]
     blinks = [item for sublist in blinks for item in sublist]    
     return blinks 
+
+
+
 
 def read_edf_plain(filename):
     """Get a dataframe containing only and all the events from the EDF file,
@@ -104,6 +118,13 @@ def no_lookback_firstAOI(data_edf,data_plain):
     # respect certain inclusion criteria
     # 
     dur_all = []
+    
+    # exclude trials where known recording problems
+    for i,pr in enumerate(data_edf):
+        if i+101 in exclude:
+            for tr_number in exclude[i+101]:
+                pr.pop(tr_number)
+                
     for i,trial in enumerate(data_edf):
         pd_fix = pd.DataFrame.from_records(trial['events']['Efix'],
                                            columns=['start',
@@ -451,6 +472,17 @@ def attach_mean_centred(eyedata):
         norm_eyedata_all[-1] = norm_eyedata_all[-1][norm_eyedata_all[-1].iloc[:,0].notna()]
     return norm_eyedata_all
 
+def count_events(eyedata):
+    """
+    Supply the participants dur to obtain a dataframe containing description
+    of the events that happened for that participant. For example:
+        - errors during recording
+        - number of regressions
+        - probability of skipping the target word
+        - average fixation duration
+        - average gaze duration
+    """
+
 ############THIS is just an idea on how to include the number of fixations prior the fixation of interest
 # # get the number of fixations prior to the first fixation within AOI
 # n_firstfix = []
@@ -480,9 +512,25 @@ data102_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/102/102
 data103_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/103/103"
 data104_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/104/104"
 data105_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/105/105"
+data106_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/106/106"
+data107_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/107/107"
+data108_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/108/108"
+data109_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/109/109"
+data110_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/110/110"
+data111_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/111/111"
 
 
-data_dir = [data101_dir, data102_dir, data103_dir, data104_dir, data105_dir]
+data_dir = [data101_dir, 
+            data102_dir, 
+            data103_dir, 
+            data104_dir, 
+            data105_dir,
+            data106_dir,
+            data107_dir,
+            data108_dir,
+            data109_dir,
+            data110_dir,
+            data111_dir]
 
 # this is pygaze standard read_edf function
 data101 = read_edf(data101_dir+".asc","STIMONSET","STIMOFFSET")
@@ -490,6 +538,12 @@ data102 = read_edf(data102_dir+".asc","STIMONSET","STIMOFFSET")
 data103 = read_edf(data103_dir+".asc","STIMONSET","STIMOFFSET")
 data104 = read_edf(data104_dir+".asc","STIMONSET","STIMOFFSET")
 data105 = read_edf(data105_dir+".asc","STIMONSET","STIMOFFSET")
+data106 = read_edf(data106_dir+".asc","STIMONSET","STIMOFFSET")
+data107 = read_edf(data107_dir+".asc","STIMONSET","STIMOFFSET")
+data108 = read_edf(data108_dir+".asc","STIMONSET","STIMOFFSET")
+data109 = read_edf(data109_dir+".asc","STIMONSET","STIMOFFSET")
+data110 = read_edf(data110_dir+".asc","STIMONSET","STIMOFFSET")
+data111 = read_edf(data111_dir+".asc","STIMONSET","STIMOFFSET")
 
 
 
@@ -502,11 +556,37 @@ data102_plain = read_edf_plain(data102_dir+".asc")
 data103_plain = read_edf_plain(data103_dir+".asc")
 data104_plain = read_edf_plain(data104_dir+".asc")
 data105_plain = read_edf_plain(data105_dir+".asc")
+data106_plain = read_edf_plain(data106_dir+".asc")
+data107_plain = read_edf_plain(data107_dir+".asc")
+data108_plain = read_edf_plain(data108_dir+".asc")
+data109_plain = read_edf_plain(data109_dir+".asc")
+data110_plain = read_edf_plain(data110_dir+".asc")
+data111_plain = read_edf_plain(data111_dir+".asc")
 
 
-data = [data101, data102, data103, data104, data105]
-data_plain = [data101_plain, data102_plain, data103_plain, data104_plain,
-              data105_plain]
+data = [data101, 
+        data102, 
+        data103, 
+        data104, 
+        data105,
+        data106,
+        data107,
+        data108,
+        data109,
+        data110,
+        data111]
+
+data_plain = [data101_plain, 
+              data102_plain, 
+              data103_plain, 
+              data104_plain,
+              data105_plain,
+              data106_plain,
+              data107_plain,
+              data108_plain,
+              data109_plain,
+              data110_plain,
+              data111_plain]
 
 # prefix nrgr = no_regressions
 nrgrdur = []
@@ -565,19 +645,19 @@ norm_wrgrfixations_all = attach_mean_centred(wrgrprfix)
 # ### HERE ARE PLOTS, uncomment if necessary
 # ###### visualization purposes only, right now only one subject (will create code for average)
 
-ax = sns.regplot(data=nrgrffd_all[4][nrgrffd_all[4]['ms']>0], x='Sim',y='ms')
+ax = sns.regplot(data=nrgrffd_all[10][nrgrffd_all[10]['ms']>0], x='Sim',y='ms')
 ax.set_title('First Fixation duration - Cloze SemanticSimilarity', fontsize = 15);
 
-bx = sns.regplot(data=nrgrffd_all[4][nrgrffd_all[4]['ms']>0], x='cloze',y='ms')
+bx = sns.regplot(data=nrgrffd_all[10][nrgrffd_all[10]['ms']>0], x='cloze',y='ms')
 bx.set_title('First Fixation duration - Cloze', fontsize = 15);
 
-cx = sns.regplot(data=nrgrffd_all[4][nrgrffd_all[4]['ms']>0], x='LogFreq(Zipf)',y='ms')
+cx = sns.regplot(data=nrgrffd_all[10][nrgrffd_all[10]['ms']>0], x='LogFreq(Zipf)',y='ms')
 cx.set_title('First Fixation duration - LogFrequency (Zipf)', fontsize = 15);
 
-dx = sns.regplot(data=norm_nrgrffd_all[3][norm_nrgrffd_all[3]['ms']>0], x='ConcM',y='ms')
+dx = sns.regplot(data=norm_nrgrffd_all[10][norm_nrgrffd_all[10]['ms']>0], x='ConcM',y='ms')
 dx.set_title('First Fixation duration - Concreteness', fontsize = 15);
 
-ex = sns.regplot(data=norm_nrgrffd_all[3][norm_nrgrffd_all[3]['ms']>0], x='mink3_SM', y='ms')
+ex = sns.regplot(data=norm_nrgrffd_all[10][norm_nrgrffd_all[10]['ms']>0], x='mink3_SM', y='ms')
 ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
 
 # ########### WORK IN PROGRESS ##############
@@ -672,9 +752,9 @@ for i,df, in enumerate(norm_nrgrgd_all):
 
 # this saves to a csv file the data which will be used in the analysis
 # change path as necessary
-pd.concat(norm_nrgrffd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffdpilots_onesemsim0924.csv',index=False)
+# pd.concat(norm_nrgrffd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffdpilots_onesemsim0924.csv',index=False)
 
-pd.concat(norm_nrgrgd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gdpilots_onesemsim0924.csv',index=False)
+# pd.concat(norm_nrgrgd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gdpilots_onesemsim0924.csv',index=False)
 
 # pd.concat(nrgrffd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/ffdpilots_onesemsim.csv',index=False)
 
