@@ -31,12 +31,13 @@ DISPSIZE = (1280, 1024)
 # when talking about pixels, x,y=(0,0) is the top-left corner
 #
 
-# trials to exclude because of errors during recording 
+# trials to exclude because of errors during recording
+# they will be selected inside (normalised)_attach_info function
 # (usually this means that the recording started before calibration)
 # (key=subject_ID : values=trials_ID)
 # consider that you should start counting trials from zero
 
-exclude = {111:[120,121]}
+exclude = {111:[120,121]} 
 
 
 
@@ -118,12 +119,6 @@ def no_lookback_firstAOI(data_edf,data_plain):
     # respect certain inclusion criteria
     # 
     dur_all = []
-    
-    # exclude trials where known recording problems
-    for i,pr in enumerate(data_edf):
-        if i+101 in exclude:
-            for tr_number in exclude[i+101]:
-                pr.pop(tr_number)
                 
     for i,trial in enumerate(data_edf):
         pd_fix = pd.DataFrame.from_records(trial['events']['Efix'],
@@ -430,8 +425,18 @@ def attach_info(eyedata):
     """Include single word and sentence level statistics"""
     eyedata_all = []
     for i,participantdata in enumerate(eyedata):
-        stimuli = pd.read_csv(data_dir[i]+'.txt', header=0,sep='\t',encoding='ISO-8859-1')
-        eye_all_i = pd.DataFrame(list(zip(eyedata[i],stimuli.trialnr)), index=stimuli.IDstim, columns=['ms','trialnr'])
+        stimuli = pd.read_csv(data_dir[i]+'.txt', header=0,sep='\t',
+                              encoding='ISO-8859-1')        
+        eye_all_i = pd.DataFrame(list(zip(eyedata[i], stimuli.trialnr)),
+                                 index=stimuli.IDstim,
+                                 columns=['ms','trialnr'])
+        
+        # check if need to exclude any trial
+        if i+101 in exclude:
+            for tr_number in exclude[i+101]:
+                eye_all_i.drop(eye_all_i[eye_all_i['trialnr']==tr_number].index,
+                               inplace=True)
+        
         # get predictors
         a = pd.merge(eye_all_i, stimuliALL[['ID',
                                      'ConcM',
@@ -455,7 +460,8 @@ def attach_info(eyedata):
                                      'cloze',
                                      'Sim',
                                      'plausibility'
-                                     ]], how='inner',left_on=['IDstim'], right_on=['ID'])
+                                     ]], how='inner',left_on=['IDstim'],
+                                         right_on=['ID'])
         eyedata_all.append(a)
         eyedata_all[-1] = eyedata_all[-1][eyedata_all[-1].iloc[:,0].notna()]    
     return eyedata_all
@@ -464,10 +470,26 @@ def attach_mean_centred(eyedata):
     """Supply the participants gd/ffd to obtain a gd/ffd_all that is mean_centred"""
     norm_eyedata_all = []
     for i,participantdata in enumerate(eyedata):
-        stimuli = pd.read_csv(data_dir[i]+'.txt', header=0,sep='\t',encoding='ISO-8859-1')
-        normalized_all_i = pd.DataFrame(list(zip(participantdata,stimuli.trialnr)), index=stimuli.IDstim, columns=['ms','trialnr'])
+        stimuli = pd.read_csv(data_dir[i]+'.txt',
+                              header=0, sep='\t', encoding='ISO-8859-1')
+        normalized_all_i = pd.DataFrame(list(zip(participantdata,
+                                                 stimuli.trialnr)),
+                                        index=stimuli.IDstim,
+                                        columns=['ms','trialnr'])
+        
+        # check if need to exclude any trial
+        if i+101 in exclude:
+            for tr_number in exclude[i+101]:
+                normalized_all_i.drop(normalized_all_i[normalized_all_i['trialnr']==tr_number].index,
+                               inplace=True)
+        
         # get predictors
-        normalized_all_i = pd.merge(normalized_all_i, stimuliALL_norm, how='inner',left_on=['IDstim'], right_on=['ID'])
+        normalized_all_i = pd.merge(normalized_all_i,
+                                    stimuliALL_norm,
+                                    how='inner',
+                                    left_on=['IDstim'],
+                                    right_on=['ID'])
+        
         norm_eyedata_all.append(normalized_all_i)
         norm_eyedata_all[-1] = norm_eyedata_all[-1][norm_eyedata_all[-1].iloc[:,0].notna()]
     return norm_eyedata_all
@@ -518,6 +540,25 @@ data108_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/108/108
 data109_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/109/109"
 data110_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/110/110"
 data111_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/111/111"
+data112_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/112/112"
+data113_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/113/113"
+data114_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/114/114"
+data115_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/115/115"
+# data116_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/116/116"
+# data117_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/117/117"
+# data118_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/118/118"
+# data119_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/119/119"
+# data120_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/120/120"
+# data121_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/121/121"
+# data122_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/122/122"
+# data123_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/123/123"
+# data124_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/124/124"
+# data125_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/125/125"
+# data126_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/126/126"
+# data127_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/127/127"
+# data128_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/128/128"
+# data129_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/129/129"
+# data130_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/130/130"
 
 
 data_dir = [data101_dir, 
@@ -530,7 +571,27 @@ data_dir = [data101_dir,
             data108_dir,
             data109_dir,
             data110_dir,
-            data111_dir]
+            data111_dir,
+            data112_dir,
+            data113_dir,
+            data114_dir,
+            data115_dir,
+            # data116_dir,
+            # data117_dir,
+              # data118_dir,
+              # data119_dir,
+              # data120_dir,
+              # data121_dir,
+              # data122_dir,
+              # data123_dir,
+              # data124_dir,
+              # data125_dir,
+              # data126_dir,
+              # data127_dir,
+              # data128_dir,
+              # data129_dir,
+              # data130_dir
+            ]
 
 # this is pygaze standard read_edf function
 data101 = read_edf(data101_dir+".asc","STIMONSET","STIMOFFSET")
@@ -544,6 +605,25 @@ data108 = read_edf(data108_dir+".asc","STIMONSET","STIMOFFSET")
 data109 = read_edf(data109_dir+".asc","STIMONSET","STIMOFFSET")
 data110 = read_edf(data110_dir+".asc","STIMONSET","STIMOFFSET")
 data111 = read_edf(data111_dir+".asc","STIMONSET","STIMOFFSET")
+data112 = read_edf(data112_dir+".asc","STIMONSET","STIMOFFSET")
+data113 = read_edf(data113_dir+".asc","STIMONSET","STIMOFFSET")
+data114 = read_edf(data114_dir+".asc","STIMONSET","STIMOFFSET")
+data115 = read_edf(data115_dir+".asc","STIMONSET","STIMOFFSET")
+# data116 = read_edf(data116_dir+".asc","STIMONSET","STIMOFFSET")
+# data117 = read_edf(data117_dir+".asc","STIMONSET","STIMOFFSET")
+# data118 = read_edf(data118_dir+".asc","STIMONSET","STIMOFFSET")
+# data119 = read_edf(data119_dir+".asc","STIMONSET","STIMOFFSET")
+# data120 = read_edf(data120_dir+".asc","STIMONSET","STIMOFFSET")
+# data121 = read_edf(data121_dir+".asc","STIMONSET","STIMOFFSET")
+# data122 = read_edf(data122_dir+".asc","STIMONSET","STIMOFFSET")
+# data123 = read_edf(data123_dir+".asc","STIMONSET","STIMOFFSET")
+# data124 = read_edf(data124_dir+".asc","STIMONSET","STIMOFFSET")
+# data125 = read_edf(data125_dir+".asc","STIMONSET","STIMOFFSET")
+# data126 = read_edf(data126_dir+".asc","STIMONSET","STIMOFFSET")
+# data127 = read_edf(data127_dir+".asc","STIMONSET","STIMOFFSET")
+# data128 = read_edf(data128_dir+".asc","STIMONSET","STIMOFFSET")
+# data129 = read_edf(data129_dir+".asc","STIMONSET","STIMOFFSET")
+# data130 = read_edf(data130_dir+".asc","STIMONSET","STIMOFFSET")
 
 
 
@@ -562,6 +642,25 @@ data108_plain = read_edf_plain(data108_dir+".asc")
 data109_plain = read_edf_plain(data109_dir+".asc")
 data110_plain = read_edf_plain(data110_dir+".asc")
 data111_plain = read_edf_plain(data111_dir+".asc")
+data112_plain = read_edf_plain(data112_dir+".asc")
+data113_plain = read_edf_plain(data113_dir+".asc")
+data114_plain = read_edf_plain(data114_dir+".asc")
+data115_plain = read_edf_plain(data115_dir+".asc")
+# data116_plain = read_edf_plain(data116_dir+".asc")
+# data117_plain = read_edf_plain(data117_dir+".asc")
+# data118_plain = read_edf_plain(data118_dir+".asc")
+# data119_plain = read_edf_plain(data119_dir+".asc")
+# data120_plain = read_edf_plain(data120_dir+".asc")
+# data121_plain = read_edf_plain(data121_dir+".asc")
+# data122_plain = read_edf_plain(data122_dir+".asc")
+# data123_plain = read_edf_plain(data123_dir+".asc")
+# data124_plain = read_edf_plain(data124_dir+".asc")
+# data125_plain = read_edf_plain(data125_dir+".asc")
+# data126_plain = read_edf_plain(data126_dir+".asc")
+# data127_plain = read_edf_plain(data127_dir+".asc")
+# data128_plain = read_edf_plain(data128_dir+".asc")
+# data129_plain = read_edf_plain(data129_dir+".asc")
+# data130_plain = read_edf_plain(data130_dir+".asc")
 
 
 data = [data101, 
@@ -574,7 +673,27 @@ data = [data101,
         data108,
         data109,
         data110,
-        data111]
+        data111,
+        data112,
+        data113,
+        data114,
+        data115
+        # data116,
+        # data117,
+        # data118,
+        # data119,
+        # data120,
+        # data121,
+        # data122,
+        # data123,
+        # data124,
+        # data125,
+        # data126,
+        # data127,
+        # data128,
+        # data129,
+        # data130
+        ]
 
 data_plain = [data101_plain, 
               data102_plain, 
@@ -586,8 +705,29 @@ data_plain = [data101_plain,
               data108_plain,
               data109_plain,
               data110_plain,
-              data111_plain]
+              data111_plain,
+              data112_plain,
+              data113_plain,
+              data114_plain,
+              data115_plain
+              # data116_plain,
+              # data117_plain,
+              # data118_plain,
+              # data119_plain,
+              # data120_plain,
+              # data121_plain,
+              # data122_plain,
+              # data123_plain,
+              # data124_plain,
+              # data125_plain,
+              # data126_plain,
+              # data127_plain,
+              # data128_plain,
+              # data129_plain,
+              # data130_plain
+              ]
 
+            
 # prefix nrgr = no_regressions
 nrgrdur = []
 
@@ -645,19 +785,19 @@ norm_wrgrfixations_all = attach_mean_centred(wrgrprfix)
 # ### HERE ARE PLOTS, uncomment if necessary
 # ###### visualization purposes only, right now only one subject (will create code for average)
 
-ax = sns.regplot(data=nrgrffd_all[10][nrgrffd_all[10]['ms']>0], x='Sim',y='ms')
+ax = sns.regplot(data=nrgrffd_all[14][nrgrffd_all[14]['ms']>0], x='Sim',y='ms')
 ax.set_title('First Fixation duration - Cloze SemanticSimilarity', fontsize = 15);
 
-bx = sns.regplot(data=nrgrffd_all[10][nrgrffd_all[10]['ms']>0], x='cloze',y='ms')
+bx = sns.regplot(data=nrgrffd_all[14][nrgrffd_all[14]['ms']>0], x='cloze',y='ms')
 bx.set_title('First Fixation duration - Cloze', fontsize = 15);
 
-cx = sns.regplot(data=nrgrffd_all[10][nrgrffd_all[10]['ms']>0], x='LogFreq(Zipf)',y='ms')
+cx = sns.regplot(data=nrgrffd_all[14][nrgrffd_all[14]['ms']>0], x='LogFreq(Zipf)',y='ms')
 cx.set_title('First Fixation duration - LogFrequency (Zipf)', fontsize = 15);
 
-dx = sns.regplot(data=norm_nrgrffd_all[10][norm_nrgrffd_all[10]['ms']>0], x='ConcM',y='ms')
+dx = sns.regplot(data=norm_nrgrffd_all[14][norm_nrgrffd_all[14]['ms']>0], x='ConcM',y='ms')
 dx.set_title('First Fixation duration - Concreteness', fontsize = 15);
 
-ex = sns.regplot(data=norm_nrgrffd_all[10][norm_nrgrffd_all[10]['ms']>0], x='mink3_SM', y='ms')
+ex = sns.regplot(data=norm_nrgrffd_all[14][norm_nrgrffd_all[14]['ms']>0], x='mink3_SM', y='ms')
 ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
 
 # ########### WORK IN PROGRESS ##############
@@ -752,9 +892,9 @@ for i,df, in enumerate(norm_nrgrgd_all):
 
 # this saves to a csv file the data which will be used in the analysis
 # change path as necessary
-# pd.concat(norm_nrgrffd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffdpilots_onesemsim0924.csv',index=False)
+# pd.concat(norm_nrgrffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffdpilots_onesemsim1026.csv',index=False)
 
-# pd.concat(norm_nrgrgd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gdpilots_onesemsim0924.csv',index=False)
+# pd.concat(norm_nrgrgd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gdpilots_onesemsim1026.csv',index=False)
 
 # pd.concat(nrgrffd_all).to_csv('C:/Users/User/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/ffdpilots_onesemsim.csv',index=False)
 
