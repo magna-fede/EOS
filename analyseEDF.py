@@ -119,7 +119,9 @@ def no_lookback_firstAOI(data_edf,data_plain):
     # respect certain inclusion criteria
     # 
     dur_all = []
-                
+    
+    time_before_fix = []
+            
     for i,trial in enumerate(data_edf):
         pd_fix = pd.DataFrame.from_records(trial['events']['Efix'],
                                            columns=['start',
@@ -133,14 +135,15 @@ def no_lookback_firstAOI(data_edf,data_plain):
         # it should not be a problem now, considering that gaze is required
         # to trigger the start of the sentence
         if (((pd_fix['x'] < 0).all()) or ((pd_fix['x'] > DISPSIZE[0]).all())):
-            dur_all.append('Error in fixation detection')  
+            dur_all.append('Error in fixation detection')
+            time_before_fix.append(0)
         elif (((pd_fix['y'] < 0).all()) or ((pd_fix['y'] > DISPSIZE[1]).all())):
             dur_all.append('Error in fixation detection')
-        
+            time_before_fix.append(0)
         # or when no fixations have been detected
         elif len(pd_fix)<2:
             dur_all.append('Error in fixation detection')
-            
+            time_before_fix.append(0)
         else:
             # consider only fixations following a the first leftmost fixation
 
@@ -209,9 +212,12 @@ def no_lookback_firstAOI(data_edf,data_plain):
                                                   (target_y[0]<pd_fix['y']) &
                                                   (pd_fix['y']<target_y[1])
                                                   ])
+                            time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
                         else:
                         # if there was a regression, do not consider the trial
                             dur_all.append('Nope - there was regression')
+                            time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
+
                     else:
                     # if this is the last fixation, than there is no regression
                     # so, get the fixations (otherwise it will give an error
@@ -222,8 +228,10 @@ def no_lookback_firstAOI(data_edf,data_plain):
                                                   (target_y[0]<pd_fix['y']) &
                                                   (pd_fix['y']<target_y[1])
                                                   ])
+                        time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
                 else:
                      dur_all.append('Nope - not fixated during first pass')       
+                     time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
             else:
                 # if there is no fixation, return empty Series
                 dur_all.append(pd_fix['duration'][(target_x[0]<pd_fix['x']) &
@@ -231,6 +239,8 @@ def no_lookback_firstAOI(data_edf,data_plain):
                                                   (target_y[0]<pd_fix['y']) &
                                                   (pd_fix['y']<target_y[1])
                                                   ])
+                time_before_fix.append(np.nan)
+                
             # now check blinks
             # first, check at least one fixation and that the object is not string
             # remember that when trials are to be discarded there's a string
@@ -248,13 +258,14 @@ def no_lookback_firstAOI(data_edf,data_plain):
                 if (any(data_plain['event'].iloc[r]=='SBLINK')
                     or any(data_plain['event'].iloc[r]=='EBLINK')):
                         dur_all[-1] = 'There was a blink'
+                        time_before_fix[-1] = 0
                         
     # returnign a list of series, containing all trials
     # each series contains all the fixations within AOI for that trial
     # each element consist in index = ordinal number of fixation for that trial
     # (eg if the first fixation within AOI was the 6th, index=6)
     # duration = duration of the fixation in ms
-    return dur_all
+    return dur_all, time_before_fix
 
 # same as before, but allowing regressions
 # not commented as before, but doing the same things, just with one check less
@@ -267,6 +278,8 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
     # respect certain inclusion criteria
     # 
     dur_all = []
+    time_before_fix = []
+    
     for i,trial in enumerate(data_edf):
         # get only 'Efix' events, because we are interested in fixations and this is where info is sotered
         pd_fix = pd.DataFrame.from_records(trial['events']['Efix'],
@@ -282,18 +295,21 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
         # to trigger the start of the sentence
         if (((pd_fix['x'] < 0).all()) or ((pd_fix['x'] > DISPSIZE[0]).all())):
             dur_all.append('Error in fixation detection')  
+            time_before_fix.append(0)
         elif (((pd_fix['y'] < 0).all()) or ((pd_fix['y'] > DISPSIZE[1]).all())):
             dur_all.append('Error in fixation detection')
+            time_before_fix.append(0)
         
         # or when no fixations have been detected
         elif len(pd_fix)<2:
             dur_all.append('Error in fixation detection')
+            time_before_fix.append(0)
             
         else:
             # consider only fixations following a the first leftmost fixation
-            while pd_fix['x'][0]>pd_fix['x'][1]:
-                pd_fix.drop([0],inplace=True)
-                pd_fix.reset_index(drop=True, inplace=True)
+            # while pd_fix['x'][0]>pd_fix['x'][1]:
+            #     pd_fix.drop([0],inplace=True)
+            #     pd_fix.reset_index(drop=True, inplace=True)
             
             # the following info is specifc to our script, where from the
             # stimulus presentation software we communicate the following msgs
@@ -344,8 +360,12 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
                                                   (target_y[0]<pd_fix['y']) &
                                                   (pd_fix['y']<target_y[1])
                                                   ])
+                    time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
+
                 else:
                      dur_all.append('Nope - not fixated during first pass')       
+                     time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
+
             else:
                 # if there is no fixation, return empty Series
                 dur_all.append(pd_fix['duration'][(target_x[0]<pd_fix['x']) &
@@ -353,7 +373,7 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
                                                   (target_y[0]<pd_fix['y']) &
                                                   (pd_fix['y']<target_y[1])
                                                   ])
-    
+                time_before_fix.append(np.nan)
         
             # now check blinks
             # first, check at least one fixation and that the object is not string
@@ -372,13 +392,14 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
                 if (any(data_plain['event'].iloc[r]=='SBLINK')
                     or any(data_plain['event'].iloc[r]=='EBLINK')):
                         dur_all[-1] = 'There was a blink'
+                        time_before_fix[-1] = 0
                         
     # returnign a list of series, containing all trials
     # each series contains all the fixations within AOI for that trial
     # each element consist in index = ordinal number of fixation for that trial
     # (eg if the first fixation within AOI was the 6th, index=6)
     # duration = duration of the fixation in ms
-    return dur_all
+    return dur_all, time_before_fix
 
 
 
@@ -421,7 +442,7 @@ def ffdgd(dur_all):
                             break
     return FFD, GD, fixated
         
-def attach_info(eyedata):
+def attach_info(eyedata, time_before_ff):
     """Include single word and sentence level statistics"""
     eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -430,6 +451,7 @@ def attach_info(eyedata):
         eye_all_i = pd.DataFrame(list(zip(eyedata[i], stimuli.trialnr)),
                                  index=stimuli.IDstim,
                                  columns=['ms','trialnr'])
+        eye_all_i['time_before_ff'] = time_before_ff[i]
         
         # check if need to exclude any trial
         if i+101 in exclude:
@@ -466,7 +488,7 @@ def attach_info(eyedata):
         eyedata_all[-1] = eyedata_all[-1][eyedata_all[-1].iloc[:,0].notna()]    
     return eyedata_all
 
-def attach_mean_centred(eyedata):
+def attach_mean_centred(eyedata, time_before_ff):
     """Supply the participants gd/ffd to obtain a gd/ffd_all that is mean_centred"""
     norm_eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -476,6 +498,10 @@ def attach_mean_centred(eyedata):
                                                  stimuli.trialnr)),
                                         index=stimuli.IDstim,
                                         columns=['ms','trialnr'])
+        normalized_all_i['time_before_ff'] = time_before_ff[i]
+        normalized_all_i['time_before_ff'] = (normalized_all_i['time_before_ff'] - \
+                                              normalized_all_i['time_before_ff'].mean() \
+                                                  ) / normalized_all_i['time_before_ff'].std()
         
         # check if need to exclude any trial
         if i+101 in exclude:
@@ -730,9 +756,11 @@ data_plain = [data101_plain,
             
 # prefix nrgr = no_regressions
 nrgrdur = []
+nrgrtime_before = []
 
 # prefix wrgr = accepting regressions
 wrgrdur = []
+wrgrtime_before = []
 
 nrgrffd = []
 nrgrgd = []
@@ -744,13 +772,15 @@ wrgrprfix = []
     
 # loop over participants  
 for i,dat in enumerate(data):
-    nrgrdur_i = no_lookback_firstAOI(data[i],data_plain[i])
-    wrgrdur_i = allowing_lookback_firstAOI(data[i],data_plain[i])
+    nrgrdur_i, nrgrtime_before_i = no_lookback_firstAOI(data[i],data_plain[i])
+    wrgrdur_i, wrgrtime_before_i = allowing_lookback_firstAOI(data[i],data_plain[i])
     
     nrgrFFD_i, nrgrGD_i, nrgrfixated_i = ffdgd(nrgrdur_i)
     wrgrFFD_i, wrgrGD_i, wrgrfixated_i = ffdgd(wrgrdur_i)
     
     nrgrdur.append(nrgrdur_i)
+    nrgrtime_before.append(nrgrtime_before_i)
+    wrgrtime_before.append(wrgrtime_before_i)
     nrgrffd.append(nrgrFFD_i)
     nrgrgd.append(nrgrGD_i)
     nrgrprfix.append(nrgrfixated_i)
@@ -761,22 +791,22 @@ for i,dat in enumerate(data):
     wrgrprfix.append(wrgrfixated_i)
 
 # attach for convenience the single-word and sentence-level statistics
-nrgrgd_all = attach_info(nrgrgd)
-nrgrffd_all = attach_info(nrgrffd)
-nrgrfixations_all = attach_info(nrgrprfix)
+nrgrgd_all = attach_info(nrgrgd, nrgrtime_before)
+nrgrffd_all = attach_info(nrgrffd, nrgrtime_before)
+nrgrfixations_all = attach_info(nrgrprfix, nrgrtime_before)
 
-wrgrgd_all = attach_info(wrgrgd)
-wrgrffd_all = attach_info(wrgrffd)
-wrgrfixations_all = attach_info(wrgrprfix)
+wrgrgd_all = attach_info(wrgrgd, wrgrtime_before)
+wrgrffd_all = attach_info(wrgrffd, wrgrtime_before)
+wrgrfixations_all = attach_info(wrgrprfix, wrgrtime_before)
 
 
-norm_nrgrgd_all = attach_mean_centred(nrgrgd)
-norm_nrgrffd_all = attach_mean_centred(nrgrffd)
-norm_nrgrfixations_all = attach_mean_centred(nrgrprfix)
+norm_nrgrgd_all = attach_mean_centred(nrgrgd, nrgrtime_before)
+norm_nrgrffd_all = attach_mean_centred(nrgrffd, nrgrtime_before)
+norm_nrgrfixations_all = attach_mean_centred(nrgrprfix, nrgrtime_before)
 
-norm_wrgrgd_all = attach_mean_centred(wrgrgd)
-norm_wrgrffd_all = attach_mean_centred(wrgrffd)
-norm_wrgrfixations_all = attach_mean_centred(wrgrprfix)
+norm_wrgrgd_all = attach_mean_centred(wrgrgd, wrgrtime_before)
+norm_wrgrffd_all = attach_mean_centred(wrgrffd, wrgrtime_before)
+norm_wrgrfixations_all = attach_mean_centred(wrgrprfix, wrgrtime_before)
 
 ##################################################################################################################
 ##################################################################################################################
