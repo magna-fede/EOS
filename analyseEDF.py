@@ -570,8 +570,8 @@ data112_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/112/112
 data113_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/113/113"
 data114_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/114/114"
 data115_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/115/115"
-# data116_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/116/116"
-# data117_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/117/117"
+data116_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/116/116"
+data117_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/117/117"
 # data118_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/118/118"
 # data119_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/119/119"
 # data120_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/120/120"
@@ -602,9 +602,9 @@ data_dir = [data101_dir,
             data113_dir,
             data114_dir,
             data115_dir,
-            # data116_dir,
-            # data117_dir,
-              # data118_dir,
+            data116_dir,
+            data117_dir,
+            # data118_dir,
               # data119_dir,
               # data120_dir,
               # data121_dir,
@@ -635,8 +635,8 @@ data112 = read_edf(data112_dir+".asc","STIMONSET","STIMOFFSET")
 data113 = read_edf(data113_dir+".asc","STIMONSET","STIMOFFSET")
 data114 = read_edf(data114_dir+".asc","STIMONSET","STIMOFFSET")
 data115 = read_edf(data115_dir+".asc","STIMONSET","STIMOFFSET")
-# data116 = read_edf(data116_dir+".asc","STIMONSET","STIMOFFSET")
-# data117 = read_edf(data117_dir+".asc","STIMONSET","STIMOFFSET")
+data116 = read_edf(data116_dir+".asc","STIMONSET","STIMOFFSET")
+data117 = read_edf(data117_dir+".asc","STIMONSET","STIMOFFSET")
 # data118 = read_edf(data118_dir+".asc","STIMONSET","STIMOFFSET")
 # data119 = read_edf(data119_dir+".asc","STIMONSET","STIMOFFSET")
 # data120 = read_edf(data120_dir+".asc","STIMONSET","STIMOFFSET")
@@ -672,8 +672,8 @@ data112_plain = read_edf_plain(data112_dir+".asc")
 data113_plain = read_edf_plain(data113_dir+".asc")
 data114_plain = read_edf_plain(data114_dir+".asc")
 data115_plain = read_edf_plain(data115_dir+".asc")
-# data116_plain = read_edf_plain(data116_dir+".asc")
-# data117_plain = read_edf_plain(data117_dir+".asc")
+data116_plain = read_edf_plain(data116_dir+".asc")
+data117_plain = read_edf_plain(data117_dir+".asc")
 # data118_plain = read_edf_plain(data118_dir+".asc")
 # data119_plain = read_edf_plain(data119_dir+".asc")
 # data120_plain = read_edf_plain(data120_dir+".asc")
@@ -703,9 +703,9 @@ data = [data101,
         data112,
         data113,
         data114,
-        data115
-        # data116,
-        # data117,
+        data115,
+        data116,
+        data117,
         # data118,
         # data119,
         # data120,
@@ -735,9 +735,9 @@ data_plain = [data101_plain,
               data112_plain,
               data113_plain,
               data114_plain,
-              data115_plain
-              # data116_plain,
-              # data117_plain,
+              data115_plain,
+              data116_plain,
+              data117_plain,
               # data118_plain,
               # data119_plain,
               # data120_plain,
@@ -815,19 +815,19 @@ norm_wrgrfixations_all = attach_mean_centred(wrgrprfix, wrgrtime_before)
 # ### HERE ARE PLOTS, uncomment if necessary
 # ###### visualization purposes only, right now only one subject (will create code for average)
 
-ax = sns.regplot(data=nrgrffd_all[14][nrgrffd_all[14]['ms']>0], x='Sim',y='ms')
+ax = sns.regplot(data=nrgrffd_all[16][nrgrffd_all[16]['ms']>0], x='Sim',y='ms')
 ax.set_title('First Fixation duration - Cloze SemanticSimilarity', fontsize = 15);
 
-bx = sns.regplot(data=nrgrffd_all[14][nrgrffd_all[14]['ms']>0], x='cloze',y='ms')
+bx = sns.regplot(data=nrgrffd_all[16][nrgrffd_all[16]['ms']>0], x='cloze',y='ms')
 bx.set_title('First Fixation duration - Cloze', fontsize = 15);
 
-cx = sns.regplot(data=nrgrffd_all[14][nrgrffd_all[14]['ms']>0], x='LogFreq(Zipf)',y='ms')
+cx = sns.regplot(data=nrgrffd_all[16][nrgrffd_all[16]['ms']>0], x='LogFreq(Zipf)',y='ms')
 cx.set_title('First Fixation duration - LogFrequency (Zipf)', fontsize = 15);
 
-dx = sns.regplot(data=norm_nrgrffd_all[14][norm_nrgrffd_all[14]['ms']>0], x='ConcM',y='ms')
+dx = sns.regplot(data=norm_nrgrffd_all[16][norm_nrgrffd_all[16]['ms']>0], x='ConcM',y='ms')
 dx.set_title('First Fixation duration - Concreteness', fontsize = 15);
 
-ex = sns.regplot(data=norm_nrgrffd_all[14][norm_nrgrffd_all[14]['ms']>0], x='mink3_SM', y='ms')
+ex = sns.regplot(data=norm_nrgrffd_all[16][norm_nrgrffd_all[16]['ms']>0], x='mink3_SM', y='ms')
 ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
 
 # ########### WORK IN PROGRESS ##############
