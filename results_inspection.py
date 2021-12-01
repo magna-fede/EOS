@@ -15,44 +15,44 @@ import numpy as np
 base_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/"
 
 
-with open("U:/AnEyeOnSemantics/25analysis/nrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/nrgr_dur_all.P", 'rb') as f:
       ALL_nrgr_ffd = pickle.load(f)
 nrgrdur_all = list(ALL_nrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/25analysis/wrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/wrgr_dur_all.P", 'rb') as f:
       ALL_wrgr_ffd = pickle.load(f)
 wrgrdur_all = list(ALL_wrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/25analysis/nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/nrgr_ffd_all.P", 'rb') as f:
       ALL_nrgr_ffd = pickle.load(f)
 nrgrffd_all = list(ALL_nrgr_ffd.values())
      
-with open("U:/AnEyeOnSemantics/25analysis/wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/wrgr_ffd_all.P", 'rb') as f:
       ALL_wrgr_ffd = pickle.load(f)
 wrgrffd_all = list(ALL_wrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/25analysis/nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/nrgr_gd_all.P", 'rb') as f:
       ALL_nrgr_gd = pickle.load(f)
 nrgrgd_all = list(ALL_nrgr_gd.values())
 
-with open("U:/AnEyeOnSemantics/25analysis/wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/wrgr_gd_all.P", 'rb') as f:
       ALL_wrgr_gd = pickle.load(f)
 wrgrgd_all = list(ALL_wrgr_gd.values())
      
      
-with open("U:/AnEyeOnSemantics/25analysis/norm_nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/norm_nrgr_ffd_all.P", 'rb') as f:
       ALL_norm_nrgr_ffd = pickle.load(f)
 norm_nrgrffd_all = list(ALL_norm_nrgr_ffd.values())
      
-with open("U:/AnEyeOnSemantics/25analysis/norm_wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/norm_wrgr_ffd_all.P", 'rb') as f:
       ALL_norm_wrgr_ffd = pickle.load(f)
 norm_wrgrffd_all = list(ALL_norm_wrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/25analysis/norm_nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/norm_nrgr_gd_all.P", 'rb') as f:
       ALL_norm_nrgr_gd = pickle.load(f)
 norm_nrgrgd_all = list(ALL_norm_nrgr_gd.values())
 
-with open("U:/AnEyeOnSemantics/25analysis/norm_wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/27analysis/norm_wrgr_gd_all.P", 'rb') as f:
       ALL_norm_wrgr_gd = pickle.load(f)
 norm_wrgrgd_all = list(ALL_norm_wrgr_gd.values())     
      
@@ -81,6 +81,9 @@ for p,participant in enumerate(nrgrffd_all):
     # a trial is good if in ffd, and if ms>0 (means that's included in lmer)
     percentage_good[p] = participant['ms'][participant['ms']>0].count()/400*100
     avg_ffd[p] = np.mean(participant['ms'][participant['ms']!=0])
+
+for p,participant in enumerate(nrgrgd_all):
+    avg_gd[p] = np.mean(participant['ms'][participant['ms']!=0])
 
 
 for i,df, in enumerate(nrgrffd_all):
