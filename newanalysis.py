@@ -27,7 +27,9 @@ DISPSIZE = (1280, 1024)
 # consider that you should start counting trials from zero
 
 exclude = {111: [120,121],
-           128: [240,241]} 
+           128: [240,241],
+           130: np.concatenate([[240],
+                                 np.arange(120,133)]).tolist()} 
 
 
 
@@ -445,8 +447,8 @@ def attach_info(eyedata, time_before_ff):
         eye_all_i['time_before_ff'] = time_before_ff[i]
         
         # check if need to exclude any trial
-        if i+101 in exclude:
-            for tr_number in exclude[i+101]:
+        if participant[i] in exclude:
+            for tr_number in exclude[participant[i]]:
                 eye_all_i.drop(eye_all_i[eye_all_i['trialnr']==tr_number].index,
                                inplace=True)
         
@@ -495,8 +497,8 @@ def attach_mean_centred(eyedata, time_before_ff):
                                                   ) / normalized_all_i['time_before_ff'].std()
         
         # check if need to exclude any trial
-        if i+101 in exclude:
-            for tr_number in exclude[i+101]:
+        if participant[i] in exclude:
+            for tr_number in exclude[participant[i]]:
                 normalized_all_i.drop(normalized_all_i[normalized_all_i['trialnr']==tr_number].index,
                                inplace=True)
         
@@ -513,24 +515,23 @@ def attach_mean_centred(eyedata, time_before_ff):
 
 def attach_mean_regressed(reg_dict, time_before_ff):
     norm_eyedata_all = []
-    i = 0
     for p in reg_dict.keys():
         reg_ser = pd.Series(data=0,index=range(400))
         reg_ser[reg_dict[p]] = 1
-        stimuli = pd.read_csv(f"{base_dir}/{participant[i]}/{participant[i]}.txt",
+        stimuli = pd.read_csv(f"{base_dir}/{participant[p]}/{participant[p]}.txt",
                               header=0, sep='\t', encoding='ISO-8859-1')
         normalized_all_i = pd.DataFrame(list(zip(reg_ser,
                                                  stimuli.trialnr)),
                                         index=stimuli.IDstim,
                                         columns=['ms','trialnr'])
-        normalized_all_i['time_before_ff'] = time_before_ff[i]
+        normalized_all_i['time_before_ff'] = time_before_ff[p]
         normalized_all_i['time_before_ff'] = (normalized_all_i['time_before_ff'] - \
                                               normalized_all_i['time_before_ff'].mean() \
                                                   ) / normalized_all_i['time_before_ff'].std()
         
         # check if need to exclude any trial
-        if i+101 in exclude:
-            for tr_number in exclude[i+101]:
+        if participant[p] in exclude:
+            for tr_number in exclude[participant[p]]:
                 normalized_all_i.drop(normalized_all_i[normalized_all_i['trialnr']==tr_number].index,
                                inplace=True)
         
@@ -543,7 +544,6 @@ def attach_mean_regressed(reg_dict, time_before_ff):
         
         norm_eyedata_all.append(normalized_all_i)
         norm_eyedata_all[-1] = norm_eyedata_all[-1][norm_eyedata_all[-1].iloc[:,0].notna()]
-        i+=1
     return norm_eyedata_all
         
 
@@ -595,9 +595,9 @@ participant = [
         # 125,
         # 126,
         # 127,
-        128,
-        129,
-        # 130
+        # 128,
+        # 129,
+        130
         ]
 
 data = {}
@@ -625,9 +625,11 @@ wrgrgd = []
 wrgrprfix = []
 
 # loop over participants  
-for i in data.keys():
-    nrgrdur_i, nrgrtime_before_i = no_lookback_firstAOI(data[i],data_plain[i])
-    wrgrdur_i, wrgrtime_before_i = allowing_lookback_firstAOI(data[i],data_plain[i])
+for subject in data.keys():
+    nrgrdur_i, nrgrtime_before_i = no_lookback_firstAOI(data[subject],
+                                                        data_plain[subject])
+    wrgrdur_i, wrgrtime_before_i = allowing_lookback_firstAOI(data[subject],
+                                                              data_plain[subject])
     
     nrgrFFD_i, nrgrGD_i, nrgrfixated_i = ffdgd(nrgrdur_i)
     wrgrFFD_i, wrgrGD_i, wrgrfixated_i = ffdgd(wrgrdur_i)
@@ -665,11 +667,11 @@ regressed = dict.fromkeys(range(len(nrgrdur)))
 for p in regressed.keys():
     regressed[p] = []
                     
-for p,participant in enumerate(nrgrdur):
-    for i,trial in enumerate(participant):
+for p,part in enumerate(nrgrdur):
+    for j,trial in enumerate(part):
         if (type(trial) == str):
             if (trial == "Nope - there was regression"):
-                regressed[p].append(i)
+                regressed[p].append(j)
 
 regressed_norminfo = attach_mean_regressed(regressed,wrgrtime_before)
 ################ need to run this through all participants and save ########
@@ -697,64 +699,64 @@ ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
     #####################
   
     
-with open("U:/AnEyeOnSemantics/27analysis/nrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/nrgr_dur_all.P", 'rb') as f:
       ALL_nrgr_dur = pickle.load(f)
 nrgr_dur_all = list(ALL_nrgr_dur.values()) 
 for l in range(len(nrgrdur)):
     nrgr_dur_all.append(nrgrdur[l])
 
-with open("U:/AnEyeOnSemantics/27analysis/wrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/wrgr_dur_all.P", 'rb') as f:
       ALL_wrgr_dur = pickle.load(f)
 wrgr_dur_all = list(ALL_wrgr_dur.values()) 
 for l in range(len(wrgrdur)):
     wrgr_dur_all.append(wrgrdur[l])
    
     
-with open("U:/AnEyeOnSemantics/27analysis/nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/nrgr_ffd_all.P", 'rb') as f:
       ALL_nrgr_ffd = pickle.load(f)
 nrgr_ffd_all = list(ALL_nrgr_ffd.values())
 for l in range(len(nrgrffd_all)):
     nrgr_ffd_all.append(nrgrffd_all[l])
      
-with open("U:/AnEyeOnSemantics/27analysis/wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/wrgr_ffd_all.P", 'rb') as f:
       ALL_wrgr_ffd = pickle.load(f)
 wrgr_ffd_all = list(ALL_wrgr_ffd.values())
 for l in range(len(wrgrffd_all)):
     wrgr_ffd_all.append(wrgrffd_all[l])
 
-with open("U:/AnEyeOnSemantics/27analysis/nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/nrgr_gd_all.P", 'rb') as f:
       ALL_nrgr_gd = pickle.load(f)
 nrgr_gd_all = list(ALL_nrgr_gd.values())
 for l in range(len(nrgrgd_all)):
     nrgr_gd_all.append(nrgrgd_all[l])
 
-with open("U:/AnEyeOnSemantics/27analysis/wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/wrgr_gd_all.P", 'rb') as f:
       ALL_wrgr_gd = pickle.load(f)
 wrgr_gd_all = list(ALL_wrgr_gd.values())
 for l in range(len(wrgrgd_all)):
     wrgr_gd_all.append(wrgrgd_all[l])
      
      
-with open("U:/AnEyeOnSemantics/27analysis/norm_nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/norm_nrgr_ffd_all.P", 'rb') as f:
       ALL_norm_nrgr_ffd = pickle.load(f)
 norm_nrgr_ffd_all = list(ALL_norm_nrgr_ffd.values())
 for l in range(len(norm_nrgrffd_all)):
     norm_nrgr_ffd_all.append(norm_nrgrffd_all[l])
      
-with open("U:/AnEyeOnSemantics/27analysis/norm_wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/norm_wrgr_ffd_all.P", 'rb') as f:
       ALL_norm_wrgr_ffd = pickle.load(f)
 norm_wrgr_ffd_all = list(ALL_norm_wrgr_ffd.values())
 for l in range(len(norm_wrgrffd_all)):
     norm_wrgr_ffd_all.append(norm_wrgrffd_all[l])
 
 
-with open("U:/AnEyeOnSemantics/27analysis/norm_nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/norm_nrgr_gd_all.P", 'rb') as f:
       ALL_norm_nrgr_gd = pickle.load(f)
 norm_nrgr_gd_all = list(ALL_norm_nrgr_gd.values())
 for l in range(len(norm_nrgrgd_all)):
     norm_nrgr_gd_all.append(norm_nrgrgd_all[l])
 
-with open("U:/AnEyeOnSemantics/27analysis/norm_wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/29analysis/norm_wrgr_gd_all.P", 'rb') as f:
       ALL_norm_wrgr_gd = pickle.load(f)
 norm_wrgr_gd_all = list(ALL_norm_wrgr_gd.values())   
 for l in range(len(norm_wrgrgd_all)):
@@ -782,7 +784,11 @@ for i,df, in enumerate(norm_wrgr_gd_all):
     norm_wrgr_gd_all[i] = norm_wrgr_gd_all[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
     norm_wrgr_gd_all[i]['Subject'] = [i]*len(norm_wrgr_gd_all[i])
-    
+
+for i,df, in enumerate(regressed_norminfo):
+    regressed_norminfo[i] = regressed_norminfo[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
+                                                    'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
+    regressed_norminfo[i]['Subject'] = [i]*len(regressed_norminfo[i])    
 
 #####################
 ### SAVE ############
@@ -792,78 +798,86 @@ participants = {}
 for i,df in enumerate(nrgr_dur_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/nrgr_dur_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/nrgr_dur_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(wrgr_dur_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/wrgr_dur_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/wrgr_dur_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(nrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/nrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/nrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(wrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/wrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/wrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(nrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/nrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/nrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(wrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/wrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/wrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(norm_nrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/norm_nrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/norm_nrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_wrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/norm_wrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/norm_wrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_nrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/norm_nrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/norm_nrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_wrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/29analysis/norm_wrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/30analysis/norm_wrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
+participants = {}
+for i,df in enumerate(regressed_norminfo):
+    participants[i] = df
 
-pd.concat(norm_nrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_29.csv',index=False)
+with open("U:/AnEyeOnSemantics/30analysis/regressed_norminfo.P", 'wb') as outfile:
+    pickle.dump(participants,outfile)  
+    
 
-pd.concat(norm_nrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_29.csv',index=False)
+pd.concat(norm_nrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_30.csv',index=False)
 
-pd.concat(norm_wrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_29.csv',index=False)
+pd.concat(norm_nrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_30.csv',index=False)
 
-pd.concat(norm_wrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_29.csv',index=False)
+pd.concat(norm_wrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_30.csv',index=False)
 
+pd.concat(norm_wrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_30.csv',index=False)
+
+pd.concat(regressed_norminfo).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/regressed_norminfo.csv',index=False)
