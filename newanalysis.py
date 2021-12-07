@@ -111,8 +111,8 @@ def no_lookback_firstAOI(data_edf,data_plain):
     # respect certain inclusion criteria
     # 
     dur_all = []
-    
     time_before_fix = []
+    tot_number_fixation = []
             
     for i,trial in enumerate(data_edf):
         pd_fix = pd.DataFrame.from_records(trial['events']['Efix'],
@@ -121,6 +121,7 @@ def no_lookback_firstAOI(data_edf,data_plain):
                                                     'duration',
                                                     'x',
                                                     'y'])
+        tot_number_fixation.append(len(pd_fix))
         
         # exclude those trials where all fixations are outside the screen
         # it used to happe if there was an error in the gaze position detection
@@ -257,7 +258,7 @@ def no_lookback_firstAOI(data_edf,data_plain):
     # each element consist in index = ordinal number of fixation for that trial
     # (eg if the first fixation within AOI was the 6th, index=6)
     # duration = duration of the fixation in ms
-    return dur_all, time_before_fix
+    return dur_all, time_before_fix, tot_number_fixation
 
 # same as before, but allowing regressions
 # not commented as before, but doing the same things, just with one check less
@@ -271,6 +272,7 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
     # 
     dur_all = []
     time_before_fix = []
+    tot_number_fixation = []
     
     for i,trial in enumerate(data_edf):
         # get only 'Efix' events, because we are interested in fixations and this is where info is sotered
@@ -280,6 +282,7 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
                                                     'duration',
                                                     'x',
                                                     'y'])
+        tot_number_fixation.append(len(pd_fix))
         
         # exclude those trials where all fixations are outside the screen
         # can happen if there is an error in the gaze position detection
@@ -391,7 +394,7 @@ def allowing_lookback_firstAOI(data_edf,data_plain):
     # each element consist in index = ordinal number of fixation for that trial
     # (eg if the first fixation within AOI was the 6th, index=6)
     # duration = duration of the fixation in ms
-    return dur_all, time_before_fix
+    return dur_all, time_before_fix, tot_number_fixation
 
 
 
@@ -403,6 +406,7 @@ def ffdgd(dur_all):
     FFD = np.zeros(len(dur_all))
     GD = np.zeros(len(dur_all))
     fixated = np.zeros(len(dur_all))
+    n_prior_fixations = np.zeros(len(dur_all))
     for i,trial in enumerate(dur_all):
         # if error in fixation, then indicate as NAN
         if type(trial)==str: # all trials that should be excluded are strings ...
@@ -432,7 +436,8 @@ def ffdgd(dur_all):
                             GD[i] += np.array(dur_all[i])[j+1]
                         else:
                             break
-    return FFD, GD, fixated
+                n_prior_fixations[i] = dur_all[i].index[0]
+    return FFD, GD, fixated, n_prior_fixations
         
 def attach_info(eyedata, time_before_ff):
     """Include single word and sentence level statistics"""
@@ -612,10 +617,12 @@ for i in participant:
 # prefix nrgr = no_regressions
 nrgrdur = []
 nrgrtime_before = []
+nrgr_nfix = []
 
 # prefix wrgr = accepting regressions
 wrgrdur = []
 wrgrtime_before = []
+wrgr_nfix = []
 
 nrgrffd = []
 nrgrgd = []
@@ -625,22 +632,29 @@ wrgrffd = []
 wrgrgd = []
 wrgrprfix = []
 
+nrgr_nprior_fixs = []
+wrgr_nprior_fixs =[]
+
 # loop over participants  
 for subject in data.keys():
-    nrgrdur_i, nrgrtime_before_i = no_lookback_firstAOI(data[subject],
+    nrgrdur_i, nrgrtime_before_i, nrgr_nfix_i = no_lookback_firstAOI(data[subject],
                                                         data_plain[subject])
-    wrgrdur_i, wrgrtime_before_i = allowing_lookback_firstAOI(data[subject],
+    wrgrdur_i, wrgrtime_before_i, wrgr_nfix_i = allowing_lookback_firstAOI(data[subject],
                                                               data_plain[subject])
     
-    nrgrFFD_i, nrgrGD_i, nrgrfixated_i = ffdgd(nrgrdur_i)
-    wrgrFFD_i, wrgrGD_i, wrgrfixated_i = ffdgd(wrgrdur_i)
+    nrgrFFD_i, nrgrGD_i, nrgrfixated_i, nrgr_nprior_fixs_i = ffdgd(nrgrdur_i)
+    wrgrFFD_i, wrgrGD_i, wrgrfixated_i, wrgr_nprior_fixs_i = ffdgd(wrgrdur_i)
     
     nrgrdur.append(nrgrdur_i)
     nrgrtime_before.append(nrgrtime_before_i)
     wrgrtime_before.append(wrgrtime_before_i)
+    nrgr_nfix.append(nrgr_nfix_i)
+    wrgr_nfix.append(wrgr_nfix_i)
     nrgrffd.append(nrgrFFD_i)
     nrgrgd.append(nrgrGD_i)
     nrgrprfix.append(nrgrfixated_i)
+    nrgr_nprior_fixs.append(nrgr_nprior_fixs_i)
+    wrgr_nprior_fixs.append(wrgr_nprior_fixs_i)
     
     wrgrdur.append(wrgrdur_i)
     wrgrffd.append(wrgrFFD_i)
