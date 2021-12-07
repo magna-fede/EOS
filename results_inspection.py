@@ -15,44 +15,44 @@ import numpy as np
 base_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/"
 
 
-with open("U:/AnEyeOnSemantics/27analysis/nrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/nrgr_dur_all.P", 'rb') as f:
       ALL_nrgr_ffd = pickle.load(f)
 nrgrdur_all = list(ALL_nrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/27analysis/wrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/wrgr_dur_all.P", 'rb') as f:
       ALL_wrgr_ffd = pickle.load(f)
 wrgrdur_all = list(ALL_wrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/27analysis/nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/nrgr_ffd_all.P", 'rb') as f:
       ALL_nrgr_ffd = pickle.load(f)
 nrgrffd_all = list(ALL_nrgr_ffd.values())
      
-with open("U:/AnEyeOnSemantics/27analysis/wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/wrgr_ffd_all.P", 'rb') as f:
       ALL_wrgr_ffd = pickle.load(f)
 wrgrffd_all = list(ALL_wrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/27analysis/nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/nrgr_gd_all.P", 'rb') as f:
       ALL_nrgr_gd = pickle.load(f)
 nrgrgd_all = list(ALL_nrgr_gd.values())
 
-with open("U:/AnEyeOnSemantics/27analysis/wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/wrgr_gd_all.P", 'rb') as f:
       ALL_wrgr_gd = pickle.load(f)
 wrgrgd_all = list(ALL_wrgr_gd.values())
      
      
-with open("U:/AnEyeOnSemantics/27analysis/norm_nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/norm_nrgr_ffd_all.P", 'rb') as f:
       ALL_norm_nrgr_ffd = pickle.load(f)
 norm_nrgrffd_all = list(ALL_norm_nrgr_ffd.values())
      
-with open("U:/AnEyeOnSemantics/27analysis/norm_wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/norm_wrgr_ffd_all.P", 'rb') as f:
       ALL_norm_wrgr_ffd = pickle.load(f)
 norm_wrgrffd_all = list(ALL_norm_wrgr_ffd.values())
 
-with open("U:/AnEyeOnSemantics/27analysis/norm_nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/norm_nrgr_gd_all.P", 'rb') as f:
       ALL_norm_nrgr_gd = pickle.load(f)
 norm_nrgrgd_all = list(ALL_norm_nrgr_gd.values())
 
-with open("U:/AnEyeOnSemantics/27analysis/norm_wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/30analysis/norm_wrgr_gd_all.P", 'rb') as f:
       ALL_norm_wrgr_gd = pickle.load(f)
 norm_wrgrgd_all = list(ALL_norm_wrgr_gd.values())     
      
@@ -92,7 +92,7 @@ nrgrffd_all_long = pd.concat(nrgrffd_all)
 
 ax = sns.boxplot(x="Subject", y="ms", data=nrgrffd_all_long[nrgrffd_all_long['ms']!=0])
 plt.title('First Fixation Durations');
-
+plt.show()
 
 for i,df, in enumerate(nrgrgd_all):
     nrgrgd_all[i]['Subject'] = [i]*len(nrgrgd_all[i])
@@ -100,7 +100,7 @@ nrgrgd_all_long = pd.concat(nrgrgd_all)
 
 ax = sns.boxplot(x="Subject", y="ms", data=nrgrgd_all_long[nrgrgd_all_long['ms']!=0])
 plt.title('Gaze Durations');
-
+plt.show()
 
 performance_answer = pd.Series(np.zeros(len(nrgrdur_all)))
 
@@ -162,7 +162,8 @@ for i,df, in enumerate(wrgrffd_all):
 wrgrffd_all_long = pd.concat(wrgrffd_all)    
     
 ax = sns.boxplot(x="Subject", y="ms", data=wrgrffd_all_long[wrgrffd_all_long['ms']!=0])
-plt.title('First Fixation Durations - with regressions');    
+plt.title('First Fixation Durations - with regressions');  
+plt.show()  
     
 for i,df, in enumerate(wrgrgd_all):
     wrgrgd_all[i]['Subject'] = [i]*len(wrgrgd_all[i])
@@ -170,6 +171,7 @@ wrgrgd_all_long = pd.concat(wrgrgd_all)
 
 ax = sns.boxplot(x="Subject", y="ms", data=wrgrgd_all_long[wrgrgd_all_long['ms']!=0])
 plt.title('Gaze Durations');
+plt.show()
 
 description_wrgr = pd.concat([wrgr_n_blinks.astype(int),
                             wrgr_n_trials_excluded.astype(int),
@@ -187,7 +189,7 @@ description_wrgr.columns = ['n_blinks',
                        'avg_gd',
                        'comprehension']
 
-f, axes = plt.subplots(5, 5, figsize=(25,25))
+f, axes = plt.subplots(6, 5, figsize=(30,25))
 
 for i in range(len(nrgrffd_all)):
     sns.regplot(data = nrgrffd_all_long[(nrgrffd_all_long['Subject']==i) & (nrgrffd_all_long['ms']>0)],
@@ -196,7 +198,7 @@ for i in range(len(nrgrffd_all)):
                 ax = axes[i//5,i%5])
     
 
-f, axes = plt.subplots(5, 5, figsize=(25,25))
+f, axes = plt.subplots(6, 5, figsize=(30,25))
 
 for i in range(len(wrgrffd_all)):
     sns.regplot(data = wrgrffd_all_long[(wrgrffd_all_long['Subject']==i) & (wrgrffd_all_long['ms']>0)],
@@ -204,7 +206,7 @@ for i in range(len(wrgrffd_all)):
                 y = 'ms',
                 ax = axes[i//5,i%5])    
     
-f, axes = plt.subplots(5, 5, figsize=(25,25))
+f, axes = plt.subplots(6, 5, figsize=(30,25))
 
 for i in range(len(nrgrffd_all)):
     sns.regplot(data = nrgrffd_all_long[(nrgrffd_all_long['Subject']==i) & (nrgrffd_all_long['ms']>0)],
@@ -212,7 +214,7 @@ for i in range(len(nrgrffd_all)):
                 y = 'ms',
                 ax = axes[i//5,i%5])    
     
-f, axes = plt.subplots(5, 5, figsize=(25,25))
+f, axes = plt.subplots(6, 5, figsize=(30,25))
 
 for i in range(len(wrgrffd_all)):
     sns.regplot(data = wrgrffd_all_long[(wrgrffd_all_long['Subject']==i) & (wrgrffd_all_long['ms']>0)],
