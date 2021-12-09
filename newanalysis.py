@@ -573,37 +573,40 @@ stimuliALL_norm = stimuliALL[['Word','ID']].join(to_norm)
 base_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/"
 
 participant = [
-        # 101, 
-        # 102, 
-        # 103, 
-        # 104, 
-        # 105,
-        # 106,
-        # 107,
-        # 108,
-        # 109,
-        # 110,
-        # 111,
-        # 112,
-        # 113,
-        # 114,
-        # 115,
-        # 116,
-        # 117,
-        # 118,
-        # 119,
-        # 120,
-        # 121,
-        # 122,
-        # 123,
-        # 124,
-        # 125,
-        # 126,
-        # 127,
-        # 128,
-        # 129,
-        # 130,
-        131
+        101, 
+        102, 
+        103, 
+        104, 
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134
         ]
 
 data = {}
@@ -689,21 +692,29 @@ for p,part in enumerate(nrgrdur):
                 regressed[p].append(j)
 
 regressed_norminfo = attach_mean_regressed(regressed,wrgrtime_before)
+
+pis = pd.read_excel("//cbsu/data/Imaging/hauk/users/fm02/EOS_data/Demographic_info.xlsx",
+                    usecols=["Participant ID",
+                             "Gender",	
+                             "Age",	
+                             "Handedness",	
+                             "% Correct Responses"])
+
 ################ need to run this through all participants and save ########
 
-ax = sns.regplot(data=nrgrffd_all[0][nrgrffd_all[0]['ms']>0], x='Sim',y='ms')
+ax = sns.regplot(data=nrgrffd_all[-1][nrgrffd_all[-1]['ms']>0], x='Sim',y='ms')
 ax.set_title('First Fixation duration - Cloze SemanticSimilarity', fontsize = 15);
 
-bx = sns.regplot(data=nrgrffd_all[0][nrgrffd_all[0]['ms']>0], x='cloze',y='ms')
+bx = sns.regplot(data=nrgrffd_all[-1][nrgrffd_all[-1]['ms']>0], x='cloze',y='ms')
 bx.set_title('First Fixation duration - Cloze', fontsize = 15);
 
-cx = sns.regplot(data=nrgrffd_all[0][nrgrffd_all[0]['ms']>0], x='LogFreq(Zipf)',y='ms')
+cx = sns.regplot(data=nrgrffd_all[-1][nrgrffd_all[-1]['ms']>0], x='LogFreq(Zipf)',y='ms')
 cx.set_title('First Fixation duration - LogFrequency (Zipf)', fontsize = 15);
 
-dx = sns.regplot(data=norm_nrgrffd_all[0][norm_nrgrffd_all[0]['ms']>0], x='ConcM',y='ms')
+dx = sns.regplot(data=norm_nrgrffd_all[-1][norm_nrgrffd_all[-1]['ms']>0], x='ConcM',y='ms')
 dx.set_title('First Fixation duration - Concreteness', fontsize = 15);
 
-ex = sns.regplot(data=norm_nrgrffd_all[0][norm_nrgrffd_all[0]['ms']>0], x='mink3_SM', y='ms')
+ex = sns.regplot(data=norm_nrgrffd_all[-1][norm_nrgrffd_all[-1]['ms']>0], x='mink3_SM', y='ms')
 ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
 
 
@@ -714,185 +725,218 @@ ex.set_title('First Fixation duration - Sensorimotor', fontsize = 15);
     #####################
   
     
-with open("U:/AnEyeOnSemantics/30analysis/nrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/nrgr_dur_all.P", 'rb') as f:
       ALL_nrgr_dur = pickle.load(f)
 nrgr_dur_all = list(ALL_nrgr_dur.values()) 
 for l in range(len(nrgrdur)):
     nrgr_dur_all.append(nrgrdur[l])
 
-with open("U:/AnEyeOnSemantics/30analysis/wrgr_dur_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/wrgr_dur_all.P", 'rb') as f:
       ALL_wrgr_dur = pickle.load(f)
 wrgr_dur_all = list(ALL_wrgr_dur.values()) 
 for l in range(len(wrgrdur)):
     wrgr_dur_all.append(wrgrdur[l])
    
     
-with open("U:/AnEyeOnSemantics/30analysis/nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/nrgr_ffd_all.P", 'rb') as f:
       ALL_nrgr_ffd = pickle.load(f)
 nrgr_ffd_all = list(ALL_nrgr_ffd.values())
 for l in range(len(nrgrffd_all)):
     nrgr_ffd_all.append(nrgrffd_all[l])
      
-with open("U:/AnEyeOnSemantics/30analysis/wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/wrgr_ffd_all.P", 'rb') as f:
       ALL_wrgr_ffd = pickle.load(f)
 wrgr_ffd_all = list(ALL_wrgr_ffd.values())
 for l in range(len(wrgrffd_all)):
     wrgr_ffd_all.append(wrgrffd_all[l])
 
-with open("U:/AnEyeOnSemantics/30analysis/nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/nrgr_gd_all.P", 'rb') as f:
       ALL_nrgr_gd = pickle.load(f)
 nrgr_gd_all = list(ALL_nrgr_gd.values())
 for l in range(len(nrgrgd_all)):
     nrgr_gd_all.append(nrgrgd_all[l])
 
-with open("U:/AnEyeOnSemantics/30analysis/wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/wrgr_gd_all.P", 'rb') as f:
       ALL_wrgr_gd = pickle.load(f)
 wrgr_gd_all = list(ALL_wrgr_gd.values())
 for l in range(len(wrgrgd_all)):
     wrgr_gd_all.append(wrgrgd_all[l])
      
      
-with open("U:/AnEyeOnSemantics/30analysis/norm_nrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/norm_nrgr_ffd_all.P", 'rb') as f:
       ALL_norm_nrgr_ffd = pickle.load(f)
 norm_nrgr_ffd_all = list(ALL_norm_nrgr_ffd.values())
 for l in range(len(norm_nrgrffd_all)):
     norm_nrgr_ffd_all.append(norm_nrgrffd_all[l])
      
-with open("U:/AnEyeOnSemantics/30analysis/norm_wrgr_ffd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/norm_wrgr_ffd_all.P", 'rb') as f:
       ALL_norm_wrgr_ffd = pickle.load(f)
 norm_wrgr_ffd_all = list(ALL_norm_wrgr_ffd.values())
 for l in range(len(norm_wrgrffd_all)):
     norm_wrgr_ffd_all.append(norm_wrgrffd_all[l])
 
 
-with open("U:/AnEyeOnSemantics/30analysis/norm_nrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/norm_nrgr_gd_all.P", 'rb') as f:
       ALL_norm_nrgr_gd = pickle.load(f)
 norm_nrgr_gd_all = list(ALL_norm_nrgr_gd.values())
 for l in range(len(norm_nrgrgd_all)):
     norm_nrgr_gd_all.append(norm_nrgrgd_all[l])
 
-with open("U:/AnEyeOnSemantics/30analysis/norm_wrgr_gd_all.P", 'rb') as f:
+with open("U:/AnEyeOnSemantics/33analysis/norm_wrgr_gd_all.P", 'rb') as f:
       ALL_norm_wrgr_gd = pickle.load(f)
 norm_wrgr_gd_all = list(ALL_norm_wrgr_gd.values())   
 for l in range(len(norm_wrgrgd_all)):
     norm_wrgr_gd_all.append(norm_wrgrgd_all[l]) 
      
 
-for i,df, in enumerate(norm_nrgr_ffd_all):
+for i,df in enumerate(norm_nrgr_ffd_all):
     norm_nrgr_ffd_all[i] = norm_nrgr_ffd_all[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
     norm_nrgr_ffd_all[i]['Subject'] = [i]*len(norm_nrgr_ffd_all[i])
+    norm_nrgr_ffd_all[i]['Gender'] = [pis["Gender"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_nrgr_ffd_all[i])
+    norm_nrgr_ffd_all[i]['Age'] = [pis["Age"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_nrgr_ffd_all[i])
+      
 # GD  - no regressions and normalised predictors, which is probably what we will use   
 
 for i,df, in enumerate(norm_nrgr_gd_all):
     norm_nrgr_gd_all[i] = norm_nrgr_gd_all[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
     norm_nrgr_gd_all[i]['Subject'] = [i]*len(norm_nrgr_gd_all[i])
+    norm_nrgr_gd_all[i]['Gender'] = [pis["Gender"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_nrgr_gd_all[i])
+    norm_nrgr_gd_all[i]['Age'] = [pis["Age"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_nrgr_gd_all[i])
+      
 
 for i,df, in enumerate(norm_wrgr_ffd_all):
     norm_wrgr_ffd_all[i] = norm_wrgr_ffd_all[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
     norm_wrgr_ffd_all[i]['Subject'] = [i]*len(norm_wrgr_ffd_all[i])
+    norm_wrgr_ffd_all[i]['Gender'] = [pis["Gender"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_wrgr_ffd_all[i])
+    norm_wrgr_ffd_all[i]['Age'] = [pis["Age"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_wrgr_ffd_all[i])
+      
 # GD  - no regressions and normalised predictors, which is probably what we will use   
 
 for i,df, in enumerate(norm_wrgr_gd_all):
     norm_wrgr_gd_all[i] = norm_wrgr_gd_all[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
     norm_wrgr_gd_all[i]['Subject'] = [i]*len(norm_wrgr_gd_all[i])
+    norm_wrgr_gd_all[i]['Gender'] = [pis["Gender"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_wrgr_gd_all[i])
+    norm_wrgr_gd_all[i]['Age'] = [pis["Age"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(norm_wrgr_gd_all[i])
 
 for i,df, in enumerate(regressed_norminfo):
     regressed_norminfo[i] = regressed_norminfo[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
-    regressed_norminfo[i]['Subject'] = [i]*len(regressed_norminfo[i])    
+    regressed_norminfo[i]['Subject'] = [i]*len(regressed_norminfo[i])  
+    regressed_norminfo[i]['Gender'] = [pis["Gender"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(regressed_norminfo[i])
+    regressed_norminfo[i]['Age'] = [pis["Age"][pis["Participant ID"] == participant[i]].values[0]] \
+                                        *len(regressed_norminfo[i])    
 
 #####################
 ### SAVE ############
 #####################
+nrgr_dur_all = nrgrdur
+wrgr_dur_all = wrgrdur
+nrgr_ffd_all = nrgrffd_all
+wrgr_ffd_all = wrgrffd_all
+nrgr_gd_all = nrgrgd_all
+wrgr_gd_all = wrgrgd_all
+norm_nrgr_ffd_all = norm_nrgrffd_all
+norm_wrgr_ffd_all = norm_wrgrffd_all
+norm_nrgr_gd_all = norm_nrgrgd_all
+norm_wrgr_gd_all = norm_wrgrgd_all
 
 participants = {}
 for i,df in enumerate(nrgr_dur_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/nrgr_dur_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/nrgr_dur_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(wrgr_dur_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/wrgr_dur_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/wrgr_dur_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(nrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/nrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/nrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(wrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/wrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/wrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(nrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/nrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/nrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(wrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/wrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/wrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(norm_nrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/norm_nrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/norm_nrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_wrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/norm_wrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/norm_wrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_nrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/norm_nrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/norm_nrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_wrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/norm_wrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/norm_wrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(regressed_norminfo):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/31analysis/regressed_norminfo.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/33analysis/regressed_norminfo.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 
-pd.concat(norm_nrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_31.csv',index=False)
+pd.concat(norm_nrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_33.csv',index=False)
 
-pd.concat(norm_nrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_31.csv',index=False)
+pd.concat(norm_nrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_33.csv',index=False)
 
-pd.concat(norm_wrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_31.csv',index=False)
+pd.concat(norm_wrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_33.csv',index=False)
 
-pd.concat(norm_wrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_31.csv',index=False)
+pd.concat(norm_wrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_33.csv',index=False)
 
 pd.concat(regressed_norminfo).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/regressed_norminfo.csv',index=False)
