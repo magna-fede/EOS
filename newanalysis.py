@@ -30,7 +30,8 @@ exclude = {111: [120,121],
            128: [240,241],
            130: np.concatenate([[240],
                                  np.arange(120,133)]).tolist(),
-           136: [80,81]} 
+           136: [80,81],
+           141: np.arange(20,39).tolist()} 
 
 
 
@@ -613,7 +614,8 @@ participant = [
         137,
         138,
 #        139 # excluded - not completed testing
-        140
+        140,
+        141
         ]
 
 data = {}
@@ -864,86 +866,86 @@ participants = {}
 for i,df in enumerate(nrgr_dur_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/nrgr_dur_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/nrgr_dur_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(wrgr_dur_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/wrgr_dur_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/wrgr_dur_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(nrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/nrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/nrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(wrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/wrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/wrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(nrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/nrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/nrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(wrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/wrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/wrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(norm_nrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/norm_nrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/norm_nrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_wrgr_ffd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/norm_wrgr_ffd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/norm_wrgr_ffd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_nrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/norm_nrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/norm_nrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 participants = {}
 for i,df in enumerate(norm_wrgr_gd_all):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/norm_wrgr_gd_all.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/norm_wrgr_gd_all.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
 
 participants = {}
 for i,df in enumerate(regressed_norminfo):
     participants[i] = df
 
-with open("U:/AnEyeOnSemantics/36analysis/regressed_norminfo.P", 'wb') as outfile:
+with open("U:/AnEyeOnSemantics/41analysis/regressed_norminfo.P", 'wb') as outfile:
     pickle.dump(participants,outfile)  
     
 
-pd.concat(norm_nrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_36.csv',index=False)
+pd.concat(norm_nrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_41.csv',index=False)
 
-pd.concat(norm_nrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_36.csv',index=False)
+pd.concat(norm_nrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_41.csv',index=False)
 
-pd.concat(norm_wrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_36.csv',index=False)
+pd.concat(norm_wrgr_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_41.csv',index=False)
 
-pd.concat(norm_wrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_36.csv',index=False)
+pd.concat(norm_wrgr_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_41.csv',index=False)
 
 pd.concat(regressed_norminfo).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/regressed_norminfo.csv',index=False)
