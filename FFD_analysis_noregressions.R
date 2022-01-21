@@ -145,3 +145,22 @@ confint(additive_Conc.Cloze)
 
 # interestingly, effect of concreteness and (log-)frequency are of similar magnitude
 
+# alternative visualisation
+densityplot(profile(additive_Conc.Cloze))
+densityplot(profile(interaction_Conc.Cloze))
+
+########## EXPLORATORY ################
+arousal = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + A_MeanSum + (1|ID) + (1|Subject), data = FFD2)
+summary(arousal)
+# no effect of arousal on ffd
+
+valence = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + V_MeanSum + (1|ID) + (1|Subject), data = FFD2)
+summary(valence)
+# no effect of valence on ffd
+
+similarity = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + similarity + (1|ID) + (1|Subject), data = FFD2)
+summary(valence)
+# similarity has an effect, but not when introducing also cloze
+
+plau = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + (1|ID) + (1|Subject), data = FFD2)
+summary(plau)
