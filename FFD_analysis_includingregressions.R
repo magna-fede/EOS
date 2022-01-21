@@ -1,4 +1,4 @@
-# this script analyses which factors affect FFD in trials without regressions
+# this script analyses which factors affect FFD including trials with regressions
 
 # import stuff
 library(readxl)
@@ -9,7 +9,7 @@ library(lattice)
 library(BayesFactor)
 
 # import dataset
-FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_41.csv')
+FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_41.csv')
 # consider only values greater than 0
 # previously selected only fixations 80-600ms long
 FFD2 <- FFD2[FFD2$ms != 0, ]
@@ -76,11 +76,6 @@ anova(lmeBasic, lmeOnlySemSim)
 # All are significant, but cloze probability explains the most variance.
 
 ################ check other confounds ###############
-lmesim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + similarity + (1|ID) + (1|Subject), data = FFD2)
-summary(lmesim)
-
-lmeplau = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + (1|ID) + (1|Subject), data = FFD2)
-summary(lmeplau)
 
 # both similarity and plausibility seem to affect FFD
 
@@ -106,12 +101,12 @@ summary(onlySM)
 
 # also sensorimotor strength affects fixation durations, but less variance explained
 
-interaction_Conc.Sim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze*ConcM + (1|ID) + (1|Subject), data = FFD2)
-additive_Conc.Sim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + (1|ID) + (1|Subject), data = FFD2)
+interaction_Conc.Cloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze*ConcM + (1|ID) + (1|Subject), data = FFD2)
+additive_Conc.Cloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
-summary(interaction_Conc.Sim) 
-summary(additive_Conc.Sim) 
-anova(interaction_Conc.Sim,additive_Conc.Sim )
+summary(interaction_Conc.Cloze) 
+summary(additive_Conc.Cloze) 
+anova(interaction_Conc.Cloze,additive_Conc.Cloze)
 # 
 
 ### cannot install brms, so using BayesFactor package
@@ -131,15 +126,12 @@ full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID 
 null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
 full_BF / null_BF
-# Concreteness has BF =  5.618111 ±1.61% when included in the base model
+# Concreteness has BF =  7.375764 ±1.92% when included in the base model
 
-
-full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
+full_BF2 = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
+null_BF2 = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF / null_BF
-# Concreteness has BF =  0.6181144 ±0.94% when included in the modelwith cloze
-
-confint(additive_Conc.Sim)
+full_BF2 / null_BF2
+# Concreteness has BF = 0.8043141 ±1.03% when included in the model with cloze
 
