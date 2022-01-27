@@ -9,7 +9,7 @@ library(lattice)
 library(BayesFactor)
 
 # import dataset
-FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_ffd_41.csv')
+FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
 # consider only values greater than 0
 # previously selected only fixations 80-600ms long
 FFD2 <- FFD2[FFD2$ms != 0, ]
@@ -73,7 +73,7 @@ anova(lmeBasic,lmeOnlyPred)
 anova(lmeBasic, lmeOnlyCloze)
 anova(lmeBasic, lmeOnlySemSim)
 
-# All are significant, but cloze probability explains the most variance.
+# All are significant, but SemanticSimilarity probability explains the most variance.
 
 ################ check other confounds ###############
 
@@ -101,12 +101,12 @@ summary(onlySM)
 
 # also sensorimotor strength affects fixation durations, but less variance explained
 
-interaction_Conc.Cloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze*ConcM + (1|ID) + (1|Subject), data = FFD2)
-additive_Conc.Cloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + (1|ID) + (1|Subject), data = FFD2)
+interaction_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+additive_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
-summary(interaction_Conc.Cloze) 
-summary(additive_Conc.Cloze) 
-anova(interaction_Conc.Cloze,additive_Conc.Cloze)
+summary(interaction_Conc.SemSim) 
+summary(additive_Conc.SemSim) 
+anova(interaction_Conc.SemSim,additive_Conc.SemSim)
 # 
 
 ### cannot install brms, so using BayesFactor package
@@ -129,9 +129,51 @@ full_BF / null_BF
 # Concreteness has BF =  7.375764 ±1.92% when included in the base model
 
 full_BF2 = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
-               data = FFD2, whichRandom = c('ID', 'Subject'))
+                data = FFD2, whichRandom = c('ID', 'Subject'))
 null_BF2 = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
-               data = FFD2, whichRandom = c('ID', 'Subject'))
+                data = FFD2, whichRandom = c('ID', 'Subject'))
 full_BF2 / null_BF2
 # Concreteness has BF = 0.8043141 ±1.03% when included in the model with cloze
 
+
+# plot only Concreteness
+dfConc <- ggpredict(additive_Conc.SemSim, terms = c("ConcM"))
+ggplot(dfConc, aes(x, predicted)) + 
+  geom_line(aes(linetype=group, color=group)) +
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
+  scale_linetype_manual(values = c("solid")) +
+  xlab("concreteness") +
+  ylab("FFD") +
+  ggtitle("Effects of concretess on FFD")
+
+# plot only cloze
+dfCloze <- ggpredict(additive_Conc.SemSim, terms = c("Sim"))
+ggplot(dfCloze, aes(x, predicted)) + 
+  geom_line(aes(linetype=group, color=group)) +
+  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
+  scale_linetype_manual(values = c("solid"))  +
+  xlab("cloze probability") +
+  ylab("FFD") +
+  ggtitle("Effects of predictability on FFD")
+
+# plot both concreteness and cloze
+dfConcCloze <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "ConcM"))
+plot(dfConcCloze)
+
+# plot both Frequency and cloze
+dfFreqCloze <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "LogFreqZipf"))
+plot(dfFreqCloze)
+
+
+# plot all points
+ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
+  geom_point(size = 1)+
+  stat_smooth(method="lm",se=FALSE)
+
+# this is informative in that it suggests that it seems that data more variable in 
+# low cloze sentences then in high cloze sentences
+
+
+# this code will plot your table of interest
+sjPlot::tab_model(additive_Conc.SemSim)
+densityplot(profile(additive_Conc.SemSim))

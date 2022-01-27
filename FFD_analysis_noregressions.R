@@ -9,10 +9,13 @@ library(lattice)
 library(BayesFactor)
 
 # import dataset
-FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_ffd_41.csv')
+FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
 # consider only values greater than 0
 # previously selected only fixations 80-600ms long
 FFD2 <- FFD2[FFD2$ms != 0, ]
+
+# consider only words that were not regressed
+FFD2 <- FFD2[FFD2$regressed != 1, ]
 
 colnames(FFD2)
 
@@ -131,7 +134,7 @@ full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID 
 null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
 full_BF / null_BF
-# Concreteness has BF =  5.618111 ±1.61% when included in the base model
+# Concreteness has BF = 5.681746 ±0.82% when included in the base model
 
 
 full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
@@ -139,7 +142,15 @@ full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + Con
 null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
 full_BF / null_BF
-# Concreteness has BF =  0.6181144 ±0.94% when included in the model with cloze
+# Concreteness has BF = 0.6264626 ±0.87% when included in the model with cloze
+
+
+null_BFCL = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
+               data = FFD2, whichRandom = c('ID', 'Subject'))
+full_BF / null_BFCL
+# cloze has BF = 5696847 ±0.77% also in the model with concreteness.
+
+#######################################
 
 confint(additive_Conc.Cloze)
 

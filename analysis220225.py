@@ -132,16 +132,16 @@ def fixAOI(data_edf,data_plain):
         # to trigger the start of the sentence
         if (((pd_fix['x'] < 0).all()) or ((pd_fix['x'] > DISPSIZE[0]).all())):
             dur_all.append('Error in fixation detection')
-            time_before_fix.append(0)
+            time_before_fix.append(np.nan)
             regressed.append(np.nan)
         elif (((pd_fix['y'] < 0).all()) or ((pd_fix['y'] > DISPSIZE[1]).all())):
             dur_all.append('Error in fixation detection')
-            time_before_fix.append(0)
+            time_before_fix.append(np.nan)
             regressed.append(np.nan)
         # or when no fixations have been detected
         elif len(pd_fix)<2:
             dur_all.append('Error in fixation detection')
-            time_before_fix.append(0)
+            time_before_fix.append(np.nan)
             regressed.append(np.nan)
         else:
             # consider only fixations following a the first leftmost fixation
@@ -231,7 +231,7 @@ def fixAOI(data_edf,data_plain):
                         regressed.append(0)
                 else:
                      dur_all.append('Nope - not fixated during first pass')       
-                     time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
+                     time_before_fix.append(np.nan)
                      regressed.append(np.nan)
             else:
                 # if there is no fixation, return empty Series
@@ -312,7 +312,7 @@ def ffdgd(dur_all):
                 n_prior_fixations[i] = dur_all[i].index[0]
     return FFD, GD, fixated, n_prior_fixations
         
-def attach_info(eyedata, regressed, time_before_ff):
+def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation):
     """Include single word and sentence level statistics"""
     eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -324,6 +324,7 @@ def attach_info(eyedata, regressed, time_before_ff):
                                  columns=['ms','trialnr'])
         eye_all_i['time_before_ff'] = time_before_ff[i]
         eye_all_i['regressed'] = regressed[i]
+        eye_all_i
         
         # check if need to exclude any trial
         if participant[i] in exclude:
@@ -462,6 +463,7 @@ data = {}
 data_plain = {}
 
 for i in participant:
+    print(f'Reading EDF data participant {i}')
     data[i] = read_edf(f"{base_dir}/{i}/{i}.asc",
                        "STIMONSET","STIMOFFSET")
     data_plain[i] = read_edf_plain(f"{base_dir}/{i}/{i}.asc")
@@ -482,12 +484,13 @@ nprior_fixs = []
 
 # loop over participants  
 for subject in data.keys():
+    print(f'Extracting data participant {subject}')
     dur_i, regressed_i, time_before_i, nfix_i = fixAOI(data[subject],
                                                         data_plain[subject])
     
     FFD_i, GD_i, fixated_i, nprior_fixs_i = ffdgd(dur_i)
     
-    dur.append(nrgrdur_i)
+    dur.append(dur_i)
     regressed.append(regressed_i)
     time_before.append(time_before_i)
     nfix.append(nfix_i)
@@ -497,10 +500,10 @@ for subject in data.keys():
     prfix.append(fixated_i)
     nprior_fixs.append(nprior_fixs_i)    
 
-gd_all = attach_info(gd, regressed, time_before)
-ffd_all = attach_info(ffd, regressed, time_before)
-norm_gd_all = attach_mean_centred(gd, regressed, time_before)
-norm_ffd_all = attach_mean_centred(ffd, regressed, time_before)
+gd_all = attach_info(gd, regressed, time_before, nfix)
+ffd_all = attach_info(ffd, regressed, time_before, nfix)
+norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix)
+norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix)
 
 pis = pd.read_excel("//cbsu/data/Imaging/hauk/users/fm02/EOS_data/Demographic_info.xlsx",
                     usecols=["Participant ID",
@@ -516,7 +519,7 @@ pis = pd.read_excel("//cbsu/data/Imaging/hauk/users/fm02/EOS_data/Demographic_in
 ### SAVE ############
 #####################
 
-for i,df in enumerate(norm_nrgr_ffd_all):
+for i,df in enumerate(norm_ffd_all):
     norm_ffd_all[i] = norm_ffd_all[i].rename(columns={'LogFreq(Zipf)':'LogFreqZipf',
                                                     'PRECEDING_LogFreq(Zipf)':'PRECEDING_LogFreqZipf'})
     norm_ffd_all[i]['Subject'] = [i]*len(norm_ffd_all[i])
@@ -537,14 +540,14 @@ for i,df, in enumerate(norm_gd_all):
                                         *len(norm_gd_all[i])
       
 
-for dat,name in zip([nrgr_dur_all,
-            nrgr_ffd_all,
-            nrgr_gd_all,
+for dat,name in zip([dur,
+            ffd_all,
+            gd_all,
             norm_ffd_all,
             norm_gd_all],
-            ['nrgr_dur_all',
-            'nrgr_ffd_all',
-            'nrgr_gd_all',
+            ['dur_all',
+            'ffd_all',
+            'gd_all',
             'norm_ffd_all',
             'norm_gd_all']):
     participants = {}
@@ -553,8 +556,6 @@ for dat,name in zip([nrgr_dur_all,
     
     with open(f"U:/AnEyeOnSemantics/41analysis/{name}.P", 'wb') as outfile:
         pickle.dump(participants,outfile)  
-
-    
 
 pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv',index=False)
 
