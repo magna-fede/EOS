@@ -9,19 +9,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from nltk.metrics.distance import edit_distance as levenshtein_distance
 
-# participants to exclude
-exclude = [27, 40]
-
 # we will use this function to calculate the number of non-empty responses for each target word
 def length_nonempty(df_list):
     length = len(df_list)
     empties = df_list.count([""])
     return length-empties
 
-###OH: What are these?
-### could probably be organised as dictionary or list (df_list['1'], df_list['2'])
 
-# FM: save temporarily participants data in two different lists, corresponding to the two groups
+
+# exclude participants whose responses were not appropriate based on first analysis
+exclude = [27, 40]
+
+# save temporarily participants data in two different lists, corresponding to the two groups
 # faster to incorprorate them in one big list later
 df_1List = []
 df_2List = []
@@ -42,21 +41,17 @@ with open('//cbsu/data/Imaging/hauk/users/fm02/EOS_data/CLOZEresults/Group2/jato
 
 
 # Create one big list containing all participants.
-# Each pariticpant is a pd_DataFrame containing all the events in the experiment
+# Each pariticpant is a pd.DataFrame containing all the events in the experiment
 # (after the instruction alternating rows about cloze and likert(plausibility) trials)
-# 
 
 dfList = [*df_1List, *df_2List]
 
-# exclude participants whose responses were not appropriate based on first analysis
-###OH: define those participants as list at top of script
-# FM: done
 
 for ex in exclude:
 	dfList.pop(ex)
 
 # initialise some useful lists
-###OH: briefly describe what those are
+
 # in this list we will save each participant responses to the cloze task
 clozeList = []
 # in this plausibility ratings
@@ -68,12 +63,13 @@ predList = []
 wordspredicted = []
 
 # save all the possible word IDs getting them from first and last participant - this is because there are different word IDs for words in group 1 and 2
-###OH: There is a lot going on in this line; can this be broken down?
-### FM
+
 # this creates a Series, with index=IDs, and each value as an empty list
 # thi empty list will be populated with all the possible responses later
-all_resp = pd.Series([[] for _ in range(len([*dfList[0]['ID'].dropna(),*dfList[-1]['ID'].dropna()]))],
-                     index=[*dfList[0]['ID'].dropna(),*dfList[-1]['ID'].dropna()])
+all_resp = pd.Series([[] for _ in range(len([*dfList[0]['ID'].dropna(),
+                                             *dfList[-1]['ID'].dropna()]))],
+                     index=[*dfList[0]['ID'].dropna().astype(int),
+                            *dfList[-1]['ID'].dropna().astype(int)])
 
 # drop attention checks ('ID' = 999)
 all_resp = all_resp.drop(999)
@@ -81,14 +77,13 @@ all_resp = all_resp.drop(999)
 # same for plausibility
 all_plausib = pd.Series([[] for _ in range(len([*dfList[0]['ID'].dropna(),
                                                 *dfList[-1]['ID'].dropna()]))],
-                     index=[*dfList[0]['ID'].dropna(),
-                            *dfList[-1]['ID'].dropna()])
+                     index=[*dfList[0]['ID'].dropna().astype(int),
+                            *dfList[-1]['ID'].dropna().astype(int)])
 all_plausib = all_plausib.drop(999)
 
 # loop over each participant
 for df in dfList:
-###OH: "cloze" changes types several times, I'm assuming that's intended
-### FM: yes, first selecting relevant rows, then relevant columns
+
     # get cloze trials
     cloze = df[df['trial_type']=='cloze']
     # keep relevant columns
@@ -103,8 +98,7 @@ for df in dfList:
             all_resp[row['ID']].append(row['response'])
     
     # get survey-likert (aka plausibility) trials
-    ###OH: "plausibility" changes type several times
-    ###FM, yes again it's intended
+
     plausibility = df[df['trial_type']=='survey-likert']
     plausibility = plausibility[['response']]
     plausibility = plausibility.rename(columns={'response':'plausibility'})
@@ -129,7 +123,7 @@ for df in dfList:
         if (cloze['target'].iloc[i] == 
             re.split(('\.| |,'),cloze['response'].iloc[i][0])[0].lower()):
             
-            wordpredicted.append(cloze[['ID','target']].iloc[i])
+            wordpredicted.append(cloze['ID'].iloc[i].astype(int))
             predicted+=1
         # accept misspelled word - counting as misspelled words with
         # levenshtein distance <=2 from the target word
@@ -137,7 +131,7 @@ for df in dfList:
         else:
             if levenshtein_distance(cloze['target'].iloc[i],
                      re.split(('\.| |,'),cloze['response'].iloc[i][0])[0].lower())<=2:
-                wordpredicted.append(cloze[['ID','target']].iloc[i])
+                wordpredicted.append(cloze['ID'].iloc[i].astype(int))
                 predicted+=1
     # save number of words predicted (to check each participants' performance)
     predList.append(predicted)
@@ -148,12 +142,13 @@ for df in dfList:
     
 get_cloze = pd.concat([df_1[['ID','target']].dropna(),df_2[['ID','target']].dropna()])
 get_cloze['cloze'] = np.zeros(shape=(len(get_cloze),1))
-get_cloze = get_cloze[get_cloze['ID']!=999]
+get_cloze['ID'] = get_cloze['ID'].astype(int)
+get_cloze = get_cloze.set_index('ID')
 
 for sub in wordspredicted:
     for word in sub:
-        if word['ID']!=999:
-            get_cloze['cloze'].loc[get_cloze['ID']==word['ID']] +=1
+        if word!=999:
+            get_cloze['cloze'].loc[word] +=1
 
 get_cloze['cloze'] = get_cloze['cloze'].astype(int)
 
@@ -165,8 +160,7 @@ get_cloze_denominator = get_cloze['all_resps'].apply(length_nonempty)
 get_cloze['cloze'] = get_cloze['cloze'] / get_cloze_denominator
 
 # add 1 to each value because start counting from 0, but the likert that was displayed started from 1 (to 7)
-###OH: all_plausib = all_plausib ?
-### FM: this was a typo
+
 all_plausib = pd.Series([np.array(x)+1 for x in all_plausib],index=all_plausib.index)
 all_plausib = all_plausib.apply(np.mean) # return the mean for each target word
 
@@ -178,23 +172,6 @@ sns.histplot(data=get_cloze,x='cloze',bins=5);
 
 plt.subplots()
 sns.histplot(data=get_cloze,x='plausibility',bins=[1,2,3,4,5,6,7]);
-
-############# no longer relevant, already selected participants to exclude
-# We might want to exclude participants who predicted less than 2 SD than average, in terms of how many words they predicted.
-# Indeed, participant 27 responses were often inappropriate when checked manually (e.g., complaining about the task, rather than performing the task), and they predicted only 24 words (considering that 44.7 answers is 2 SD away from the mean). Participant 40 predicted 37 words, but very often left the response box empty (i.e., no response given - I guess to speed up the experiment).
-#############
-# check participants based on number of words predicted
-minimum_predicted = np.mean(np.array(predList))-2*(np.std(np.array(predList)))
-to_exclude = [idx for idx, x in enumerate(predList) if x<minimum_predicted]
-
-print(to_exclude, minimum_predicted, np.mean(np.array(predList)))
-
-###OH: Could the following be a separate script?
-### FM: I though of having all in one script just because here I am calculating
-###     the CLOZE_semantic_similarity.
-###     But I do agree this is too messy, I will just calcuate cloze semantic similarityy
-###     in here and caluclate Position +  plot correlations in another script
-
 
 
 ##############################################################################
@@ -208,23 +185,28 @@ from gensim.parsing import preprocessing
 from nltk.corpus import stopwords
 from spellchecker import SpellChecker
 
+# load w2v trained on google news
 wv = api.load('word2vec-google-news-300')
 
+# intialised spell check
 spell = SpellChecker()
 
 # import dataframe with two columns: one has US spelling, the other UK
-df = pd.read_csv('C:/Users/User/OwnCloud/ClozeTask_sharedfolder/UK2US.csv',sep=';')
+# this is necessary because word2vec has words in US spelling and not UK
+df = pd.read_csv('C:/Users/fm02/OwnCloud/ClozeTask_sharedfolder/UK2US.csv',sep=';')
 UK2US_dict = pd.Series(df.US.values,index=df.UK).to_dict()
 US2UK_dict = pd.Series(df.UK.values,index=df.US).to_dict()
 
-def replace_all(text):
-    for i,w in enumerate(text):
-        if w in UK2US_dict:
-            text[i] = UK2US_dict[w]
-    return text
+def replace_all(text, Udict):
+    """"Replace elements using UK2US or US2UK in a nested structure"""
+    text2 = text.copy()
+    for i,w in enumerate(text2):
+        if w in Udict:
+            text2[i] = Udict[w]
+    return text2 
 
 def clean_resp(resps):
-"""This function checks that responses are ready to be feed to word2vec."""
+    """This function checks that responses are ready to be feed to word2vec."""
     # import stopwords from nltk
     stop_words = set(stopwords.words('english')) 
     all_trials = []
@@ -242,7 +224,7 @@ def clean_resp(resps):
             s = preprocessing.strip_numeric(s)
             # using stop words from nltk because too many in gensim stop_word, including target words
             s = nltk.word_tokenize(s)
-            s = replace_all(s)
+            s = replace_all(s, UK2US_dict)
             # (re)create a list of words for each response
             s = [word for word in s if not word in stop_words]
             # find words of unknown spelling
@@ -264,7 +246,7 @@ def clean_resp(resps):
     return all_trials
 
 responses = get_cloze['all_resps']
-targets = replace_all(get_cloze['target'])
+targets = replace_all(get_cloze['target'], UK2US_dict)
 
 # prepare responses to be analysed in w2v (consider that w2v is US not UK)
 tok = clean_resp(responses)
@@ -282,24 +264,21 @@ for i,t in enumerate(tok):
             # calculare similarities with target word and append the word that
             # is most similar to the target word.
             similarities.append(max([wv.similarity(w,targets[i])
-                                     for id_w,w in enumerate(list_words)
-                                     if wv.has_index_for(w)]))
+                                     for w in list_words if wv.has_index_for(w)]))
     # calculate now the average similarity between responses and the target word
     # this is our measure of CLOZE SEMANTIC SIMILARITY
     word_similarities['Sim'].loc[word_similarities['Word']==targets[i]] = np.mean(similarities)
 
-
+# distribution is less skewed the normal cloze distribution
 plt.subplots()
 sns.histplot(data=word_similarities,x='Sim',bins=10);
 
-for target in targets:
-    if target in US2UK_dict:
-        word_similarities['Word'][word_similarities['Word']==target] = US2UK_dict[target]
 # get back to UK spelling
+word_similarities['Word'] = replace_all(word_similarities['Word'], US2UK_dict)
 
 # ## Now let's look how cloze fits with the previous words characteristics
 # first, load the 
-stimuli = pd.read_excel('C:/Users/User/OwnCloud/Sentences/stimuli_ALL.xlsx', engine='openpyxl',
+stimuli = pd.read_excel('C:/Users/fm02/OwnCloud/Sentences/stimuli_ALL.xlsx', engine='openpyxl',
                         usecols=['ID',
                                  'Word',
                                  'Sentence',
@@ -330,7 +309,7 @@ stimuli = stimuli.merge(get_cloze[['cloze','plausibility']],
 
 corrStimuli2 = pd.merge(stimuli,word_similarities, on='Word' )
 
-# corrStimuli2.to_excel('C:/Users/User/OwnCloud/Sentences/stimuli_all_onewordsemsim.xlsx',index=False)
+# corrStimuli2.to_excel('C:/Users/fm02/OwnCloud/Sentences/stimuli_all_onewordsemsim.xlsx',index=False)
 
 corrStimuli2 = corrStimuli2[['ConcM', 
                              'LEN', 

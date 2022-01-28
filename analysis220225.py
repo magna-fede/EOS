@@ -26,14 +26,14 @@ DISPSIZE = (1280, 1024)
 # (key=subject_ID : values=trials_ID)
 # consider that you should start counting trials from zero
 
+# check records of test for comments, or also Demographic Info excel
+
 exclude = {111: [120,121],
            128: [240,241],
            130: np.concatenate([[240],
                                  np.arange(120,133)]).tolist(),
            136: [80,81],
            141: np.arange(20,39).tolist()} 
-
-
 
  
 def get_blinks(data_edf):
@@ -105,9 +105,9 @@ def read_edf_plain(filename):
 
 
 def fixAOI(data_edf,data_plain):
-    """Get all fixations within AOI that are not followed by a regression
+    """Get all fixations within AOI. Checks that are not followed by a regression
     after the first fixation within the AOI + trials that do not contain
-    a blink"""
+    a blink or error"""
     # get all fixation durations within a certain AOI for all trials for one subject
     # dur_all is the list where we include all the fixation durations that
     # respect certain inclusion criteria
@@ -260,7 +260,7 @@ def fixAOI(data_edf,data_plain):
                 if (any(data_plain['event'].iloc[r]=='SBLINK')
                     or any(data_plain['event'].iloc[r]=='EBLINK')):
                         dur_all[-1] = 'There was a blink'
-                        time_before_fix[-1] = 0
+                        time_before_fix[-1] = np.nan
                         regressed[-1] = np.nan
                         
     # returnign a list of series, containing all trials
@@ -279,7 +279,7 @@ def ffdgd(dur_all):
     FFD = np.zeros(len(dur_all))
     GD = np.zeros(len(dur_all))
     fixated = np.zeros(len(dur_all))
-    n_prior_fixations = np.zeros(len(dur_all))
+    n_prior_fixations = np.nan(len(dur_all))
     for i,trial in enumerate(dur_all):
         # if error in fixation, then indicate as NAN
         if type(trial)==str: # all trials that should be excluded are strings ...
@@ -312,7 +312,7 @@ def ffdgd(dur_all):
                 n_prior_fixations[i] = dur_all[i].index[0]
     return FFD, GD, fixated, n_prior_fixations
         
-def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation):
+def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior_fix):
     """Include single word and sentence level statistics"""
     eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -324,7 +324,8 @@ def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation):
                                  columns=['ms','trialnr'])
         eye_all_i['time_before_ff'] = time_before_ff[i]
         eye_all_i['regressed'] = regressed[i]
-        eye_all_i
+        eye_all_i['n_tot_fix'] = tot_number_fixation[i]
+        eye_all_i['n_prior_fix'] = n_prior_fix[i]
         
         # check if need to exclude any trial
         if participant[i] in exclude:
@@ -361,7 +362,7 @@ def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation):
         eyedata_all[-1] = eyedata_all[-1][eyedata_all[-1].iloc[:,0].notna()]    
     return eyedata_all
 
-def attach_mean_centred(eyedata,regressed, time_before_ff):
+def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, n_prior_fix):
     """Supply the participants gd/ffd to obtain a gd/ffd_all that is mean_centred"""
     norm_eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -373,10 +374,19 @@ def attach_mean_centred(eyedata,regressed, time_before_ff):
                                         columns=['ms','trialnr'])
         normalized_all_i['time_before_ff'] = time_before_ff[i]
         normalized_all_i['regressed'] = regressed[i]
+        normalized_all_i['n_tot_fix'] = tot_number_fixation[i]
+        normalized_all_i['n_prior_fix'] = n_prior_fix[i]
         normalized_all_i['time_before_ff'] = (normalized_all_i['time_before_ff'] - \
                                               normalized_all_i['time_before_ff'].mean() \
                                                   ) / normalized_all_i['time_before_ff'].std()
-        
+        normalized_all_i['n_tot_fix'] = (normalized_all_i['n_tot_fix'] - \
+                                              normalized_all_i['n_tot_fix'].mean() \
+                                                  ) / normalized_all_i['n_tot_fix'].std()
+        normalized_all_i['n_prior_fix'] = (normalized_all_i['n_prior_fix'] - \
+                                              normalized_all_i['n_prior_fix'].mean() \
+                                                  ) / normalized_all_i['n_prior_fix'].std()            
+
+            
         # check if need to exclude any trial
         if participant[i] in exclude:
             for tr_number in exclude[participant[i]]:
@@ -477,8 +487,6 @@ nfix = []
 ffd = []
 gd = []
 prfix = []
-
-
 nprior_fixs = []
 
 
@@ -500,10 +508,10 @@ for subject in data.keys():
     prfix.append(fixated_i)
     nprior_fixs.append(nprior_fixs_i)    
 
-gd_all = attach_info(gd, regressed, time_before, nfix)
-ffd_all = attach_info(ffd, regressed, time_before, nfix)
-norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix)
-norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix)
+gd_all = attach_info(gd, regressed, time_before, nfix, nprior_fixs)
+ffd_all = attach_info(ffd, regressed, time_before, nfix, nprior_fixs)
+norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix, nprior_fixs)
+norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix, nprior_fixs)
 
 pis = pd.read_excel("//cbsu/data/Imaging/hauk/users/fm02/EOS_data/Demographic_info.xlsx",
                     usecols=["Participant ID",
