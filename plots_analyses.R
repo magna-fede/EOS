@@ -47,17 +47,19 @@ ggplot(dfCloze, aes(x, predicted)) +
 dfConcCloze <- ggpredict(additive_Conc.Cloze, terms = c("cloze", "ConcM"))
 plot(dfConcCloze)
 
+# plot both Frequency and cloze
+dfFreqCloze <- ggpredict(additive_Conc.Cloze, terms = c("cloze", "LogFreqZipf"))
+plot(dfFreqCloze)
+
+
 # plot all points
 ggplot(additive_Conc.Cloze,aes(y=ms,x=cloze,color=ConcM))+
   geom_point(size = 1)+
   stat_smooth(method="lm",se=FALSE)
 
-  # this is informative in that it suggests that it seems that data more variable in 
+# this is informative in that it suggests that it seems that data more variable in 
 # low cloze sentences then in high cloze sentences
 
-# plot both concreteness and cloze
-dfFreqCloze <- ggpredict(additive_Conc.Cloze, terms = c("cloze", "LogFreqZipf"))
-plot(dfFreqCloze)
 
 # this code will plot your table of interest
 sjPlot::tab_model(additive_Conc.Cloze)

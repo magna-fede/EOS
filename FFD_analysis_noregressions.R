@@ -7,6 +7,7 @@ library(lmerTest)
 library(languageR)
 library(lattice)
 library(BayesFactor)
+library(bayesplot)
 
 # import dataset
 FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
@@ -51,7 +52,7 @@ summary(posFFD2)
 # Position in the sentence seems to affect FFD, so including it
 
 ############ time before FFD #######
-tbFFD2 = lmer(ms ~  time_before_ff + (1|ID) + (1|Subject), data = FFD2)
+tbFFD2 = lmer(ms ~  n_prior_fix + (1|ID) + (1|Subject), data = FFD2)
 summary(tbFFD2)
 # Time before FFD does not seem to affect FFD, so not including it in the model
 
@@ -129,26 +130,32 @@ anova(interaction_Conc.Cloze,additive_Conc.Cloze)
 FFD2$ID = factor(FFD2$ID)  # BayesFactor wants the random to be a factor
 FFD2$Subject = factor(FFD2$Subject)
 
-full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
+full_BF_conc = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
 null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF / null_BF
+full_BF_conc / null_BF
 # Concreteness has BF = 5.681746 ±0.82% when included in the base model
 
 
-full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
+full_BF_add = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
+null_BF_addconc = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF / null_BF
+full_BF_add / null_BF_addconc
 # Concreteness has BF = 0.6264626 ±0.87% when included in the model with cloze
 
 
-null_BFCL = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
+null_BF_cloze = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF / null_BFCL
+full_BF_addconc / full_BF_conc # PF cloze parameter
 # cloze has BF = 5696847 ±0.77% also in the model with concreteness.
+
+full_BF_int = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + cloze:ConcM + ID + Subject,
+                   data = FFD2, whichRandom = c('ID', 'Subject'))
+
+bf = full_BF_int / full_BF_add
+# bf = 0.1173778 �10.1%
 
 #######################################
 
@@ -159,6 +166,33 @@ confint(additive_Conc.Cloze)
 # alternative visualisation
 densityplot(profile(additive_Conc.Cloze))
 densityplot(profile(interaction_Conc.Cloze))
+
+
+##################### BAYES posterior #######################
+# MCMC posterior
+
+chainsFull <- posterior(full_BF_add, iterations = 10000,columnFilter="^ID$")
+chainsFull_int <- posterior(full_BF_int, iterations = 10000,columnFilter="^ID$")
+
+summary(chainsFull)
+summary(chainsFull_int[,c("PRECEDING_LogFreqZipf",
+                          "Position", 
+                          "LogFreqZipf",
+                          "cloze",
+                          "ConcM", 
+                          "cloze.&.ConcM")])
+
+plot(chainsFull[,"cloze"], main = "Posterior of true probability cloze")
+plot(chainsFull[,"ConcM"], main = "Posterior of true probability concretenes")
+
+mcmc_areas(chainsFull[,2:6], prob=.8,prob_outer = .9, point_est = "mean")
+mcmc_areas(chainsFull_int[,c("PRECEDING_LogFreqZipf",
+                             "Position",
+                             "LogFreqZipf",
+                             "cloze",
+                             "ConcM",
+                             "cloze.&.ConcM")],
+           prob=.8,prob_outer = .9, point_est = "mean")
 
 ########## EXPLORATORY ################
 arousal = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + A_MeanSum + (1|ID) + (1|Subject), data = FFD2)

@@ -9,8 +9,11 @@ library(lattice)
 library(BayesFactor)
 
 # import dataset
-GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_nrgr_gd_41.csv')
+GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv')
+
 GD2 <- GD2[GD2$ms != 0, ]
+
+GD2 <- GD2[GD2$regressed == 0, ]
 
 # GD2 <- GD2[!(GD2$Subject== 3 | GD2$Subject== 14 | GD2$Subject== 33 | GD2$Subject== 34 ),]
 # let's try some of the predictors influence on fixation duration
@@ -86,8 +89,22 @@ summary(onlySM)
 
 additive_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + Sim + ConcM + (1|ID) + (1|Subject), data = GD2)
 
-summary(interaction_ConcM.Sim)
 summary(additive_ConcM.Sim) 
-anova(interaction_ConcM.Sim,additive_ConcM.Sim )
 
 # concreteness does not affect Gaze duration
+
+sjPlot::tab_model(additive_ConcM.Sim)
+
+# plot both concreteness and cloze
+dfConcCloze <- ggpredict(additive_ConcM.Sim, terms = c("Sim", "ConcM"))
+plot(dfConcCloze)
+
+# plot both Frequency and cloze
+dfFreqCloze <- ggpredict(additive_ConcM.Sim, terms = c("Sim", "LogFreqZipf"))
+plot(dfFreqCloze)
+
+ggplot(additive_ConcM.Sim,aes(y=ms,x=Sim,color=ConcM))+
+  geom_point(size = 1)+
+  stat_smooth(method="lm",se=FALSE)
+
+

@@ -9,7 +9,7 @@ library(lattice)
 library(BayesFactor)
 
 # import dataset
-GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_wrgr_gd_41.csv')
+GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv')
 GD2 <- GD2[GD2$ms != 0, ]
 
 # GD2 <- GD2[!(GD2$Subject== 3 | GD2$Subject== 14 | GD2$Subject== 33 | GD2$Subject== 34 ),]
@@ -65,7 +65,7 @@ anova(lmeBasicGD2,lmeOnlyPred)
 anova(lmeBasicGD2, lmeOnlyCloze)
 anova(lmeBasicGD2, lmeOnlySemSim)
 
-# In this case, all are significant, but cloze explains the most variance
+# In this case, all are significant, but sim explains the most variance
 
 ################ introduce Concreteness ###############
 onlyConc = lmer(ms ~ LogFreqZipf + LEN  + PRECEDING_LogFreqZipf + Position +  ConcM + (1|ID) + (1|Subject), data = GD2)
@@ -79,9 +79,11 @@ onlySM = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + mink3_
 summary(onlySM)
 # also Sensorimotor strength does not have an effect on GD
 
-additive_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + cloze + ConcM + (1|ID) + (1|Subject), data = GD2)
+additive_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = GD2)
 
 summary(additive_ConcM.Sim) 
 
-# concreteness is not significant anymore when including cloze in the model
+# concreteness is not significant anymore when including clozeSemSim in the model
 # somehow the two share some variance
+# this code will plot your table of interest
+sjPlot::tab_model(additive_ConcM.Sim)

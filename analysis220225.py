@@ -279,7 +279,8 @@ def ffdgd(dur_all):
     FFD = np.zeros(len(dur_all))
     GD = np.zeros(len(dur_all))
     fixated = np.zeros(len(dur_all))
-    n_prior_fixations = np.nan(len(dur_all))
+    n_prior_fixations = np.empty((len(dur_all)))
+    n_prior_fixations[:] = np.nan
     for i,trial in enumerate(dur_all):
         # if error in fixation, then indicate as NAN
         if type(trial)==str: # all trials that should be excluded are strings ...
@@ -304,6 +305,7 @@ def ffdgd(dur_all):
                 if len(dur_all[i])>1:
                     # if more than one, check whether they are consecutive
                     # fixations inside the AOI by checking the index
+                    # see Footnote 1 
                     for j in range(len(dur_all[i].index)-1):
                         if dur_all[i].index[j+1]-dur_all[i].index[j]==1:
                             GD[i] += np.array(dur_all[i])[j+1]
@@ -568,3 +570,28 @@ for dat,name in zip([dur,
 pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv',index=False)
 
 pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv',index=False)
+
+##################
+### Footnote 1 ###
+### In this way, if a first fixation within the AOI is less then 80ms,
+### but a participant performs a subsequent fixation within the AOI, the two
+### consecutive fixatinos will be summed in the calculation of GD, but count as
+### zero in the FFD calculation. This affects only 14 trials :
+# ### ID Subject
+# 1  291       1
+# 2  444       1
+# 3  255       1
+# 4  354      10
+# 5  304      10
+# 6  198      10
+# 7  487      17
+# 8  309      17
+# 9  358      17
+# 10 303      20
+# 11 244      20
+# 12 123      20
+# 13 417      28
+# 14 149      39
+### Are there better ways to deal with this? e.g., consider the sum of them
+### also when calculating FFD? -> i.e., do them count as one fixation, two
+### consecutive fixations or half way?
