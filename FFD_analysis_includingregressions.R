@@ -7,6 +7,9 @@ library(lmerTest)
 library(languageR)
 library(lattice)
 library(BayesFactor)
+library(ggeffects)
+library(ggplot2)
+library(performance)
 
 # import dataset
 FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
@@ -79,9 +82,9 @@ anova(lmeBasic, lmeOnlySemSim)
 
 # both similarity and plausibility seem to affect FFD
 
-lmesimcloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + similarity + (1|ID) + (1|Subject), data = FFD2)
+lmesimcloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + similarity + (1|ID) + (1|Subject), data = FFD2)
 summary(lmesimcloze)
-lmeplau = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + plausibility + (1|ID) + (1|Subject), data = FFD2)
+lmeplau = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + plausibility + (1|ID) + (1|Subject), data = FFD2)
 summary(lmeplau)
 
 # but in both cases, it seems that when including cloze as a predictor, it incorporates their variance
@@ -109,6 +112,8 @@ summary(additive_Conc.SemSim)
 anova(interaction_Conc.SemSim,additive_Conc.SemSim)
 # 
 
+performance(additive_Conc.SemSim)
+
 ### cannot install brms, so using BayesFactor package
 # full_brms = brm(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + (1|ID) + (1|Subject),
 #                 data = FFD2, save_all_pars = TRUE, iter = 10000)
@@ -121,23 +126,96 @@ anova(interaction_Conc.SemSim,additive_Conc.SemSim)
 FFD2$ID = factor(FFD2$ID)  # BayesFactor wants the random to be a factor
 FFD2$Subject = factor(FFD2$Subject)
 
-full_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
+conc_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ID + Subject,
+basic_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF / null_BF
-# Concreteness has BF =  7.375764 Â±1.92% when included in the base model
+conc_BF / basic_BF
+# Concreteness has BF =  7.492556 ±1.83% when included in the base model
 
-full_BF2 = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
+add_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + ID + Subject,
                 data = FFD2, whichRandom = c('ID', 'Subject'))
-null_BF2 = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
+Sim_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ID + Subject,
                 data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF2 / null_BF2
-# Concreteness has BF = 0.8043141 Â±1.03% when included in the model with cloze
+add_BF / Sim_BF
+# Concreteness has BF = 0.8579711 ±1.46% when included in the model with Sim
+
+add_BF / conc_BF # PF Sim parameter
+# Sim has BF = 845334.2 ±1.74% also in the model with concreteness.
+
+
+full_BF_int = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + Sim:ConcM + ID + Subject,
+                   data = FFD2, whichRandom = c('ID', 'Subject'))
+
+interactionBF = full_BF_int / add_BF
+interactionBF
+
+# interaction has a BF = 0.09660833 ±1.39%
+
+
+
+########### check best model #########################
+# bf = generalTestBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + plausibility + Position +  
+#                      + Sim * ConcM + Subject + ID, data=FFD2, whichRandom=c('ID', 'Subject'), neverExclude=c('ID', 'Subject'))
+
+### Save an object to a file
+# saveRDS(bf, file = "U:/AnEyeOnSemantics/41analysis/BF_additive_all.rds")
+### Restore the object
+# bf = readRDS(file = "U:/AnEyeOnSemantics/41analysis/BF_additive_all.rds")
+#head(bf, n=10)
+# Bayes factor analysis
+# --------------
+#   [1] PRECEDING_LogFreqZipf + Sim + Subject + ID                                   : 1.005547e+292 ±0.69%
+# [2] PRECEDING_LogFreqZipf + Position + Sim + Subject + ID                        : 8.499006e+291 ±0.82%
+# [3] PRECEDING_LogFreqZipf + Position + Sim + ConcM + Subject + ID                : 6.714375e+291 ±0.61%
+# [4] PRECEDING_LogFreqZipf + Sim + ConcM + Subject + ID                           : 6.689156e+291 ±0.6%
+# [5] Sim + Subject + ID                                                           : 5.944403e+291 ±1.18%
+# [6] PRECEDING_LogFreqZipf + plausibility + Position + Sim + ConcM + Subject + ID : 5.933368e+291 ±0.65%
+# [7] PRECEDING_LogFreqZipf + plausibility + Sim + ConcM + Subject + ID            : 5.837369e+291 ±0.61%
+# [8] Sim + ConcM + Subject + ID                                                   : 5.639672e+291 ±0.72%
+# [9] plausibility + Sim + ConcM + Subject + ID                                    : 5.239752e+291 ±0.64%
+# [10] LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + Subject + ID         : 4.67311e+291  ±0.49%
+# 
+# Against denominator:
+#   Intercept only 
+# ---
+#   Bayes factor type: BFlinearModel, JZS
+
+############################################
+
+chainsFull_int <- posterior(full_BF_int, iterations = 10000,columnFilter="^ID$")
+
+summary(chainsFull_int[,c("PRECEDING_LogFreqZipf",
+                          "Position", 
+                          "LogFreqZipf",
+                          "Sim",
+                          "ConcM", 
+                          "Sim.&.ConcM")])
+
+
+
+# mcmc_areas(chainsFull_int[,c("PRECEDING_LogFreqZipf",
+#                              "Position",
+#                              "LogFreqZipf",
+#                              "Sim",
+#                              "ConcM",
+#                              "Sim.&.ConcM")],
+#            prob=.8,prob_outer = .9, point_est = "mean")
+
+
+mcmc_intervals(chainsFull_int[,c("PRECEDING_LogFreqZipf",
+                                 "Position",
+                                 "LogFreqZipf",
+                                 "Sim",
+                                 "ConcM",
+                                 "Sim.&.ConcM")],
+               prob=.5,prob_outer = .9, point_est = "mean")
+
+
 
 
 # plot only Concreteness
-dfConc <- ggpredict(additive_Conc.SemSim, terms = c("ConcM"))
+dfConc <- ggeffect(additive_Conc.SemSim, terms = c("ConcM"))
 ggplot(dfConc, aes(x, predicted)) + 
   geom_line(aes(linetype=group, color=group)) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
@@ -146,23 +224,24 @@ ggplot(dfConc, aes(x, predicted)) +
   ylab("FFD") +
   ggtitle("Effects of concretess on FFD")
 
-# plot only cloze
-dfCloze <- ggpredict(additive_Conc.SemSim, terms = c("Sim"))
-ggplot(dfCloze, aes(x, predicted)) + 
+# plot only Sim
+dfSim <- ggeffect(additive_Conc.SemSim, terms = c("Sim"))
+ggplot(dfSim, aes(x, predicted)) + 
   geom_line(aes(linetype=group, color=group)) +
   geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
   scale_linetype_manual(values = c("solid"))  +
-  xlab("cloze probability") +
+  xlab("cloze semantic similarity") +
   ylab("FFD") +
   ggtitle("Effects of predictability on FFD")
 
-# plot both concreteness and cloze
-dfConcCloze <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "ConcM"))
-plot(dfConcCloze)
 
-# plot both Frequency and cloze
-dfFreqCloze <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "LogFreqZipf"))
-plot(dfFreqCloze)
+# plot both concreteness and Sim
+dfConcSim <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "ConcM"))
+plot(dfConcSim)
+
+# plot both Frequency and Sim
+dfFreqSim <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "LogFreqZipf"))
+plot(dfFreqSim)
 
 
 # plot all points
@@ -171,9 +250,14 @@ ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
   stat_smooth(method="lm",se=FALSE)
 
 # this is informative in that it suggests that it seems that data more variable in 
-# low cloze sentences then in high cloze sentences
+# low Sim sentences then in high Sim sentences
 
 
 # this code will plot your table of interest
 sjPlot::tab_model(additive_Conc.SemSim)
+sjPlot::plot_model(additive_Conc.SemSim)
+
+sjPlot::tab_model(interaction_Conc.SemSim)
+sjPlot::plot_model(interaction_Conc.SemSim)
+
 densityplot(profile(additive_Conc.SemSim))

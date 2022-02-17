@@ -17,6 +17,8 @@ library(lmerTest)
 library(languageR)
 library(lattice)
 library(BayesFactor)
+library(ggeffects)
+library(ggplot2)
 
 # import the dataset
 GD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv')
@@ -88,6 +90,7 @@ additive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Sim + ConcM + (1|ID) + (1|S
 summary(additive_ConcM.Sim)
 
 sjPlot::tab_model(additive_ConcM.Sim)
+sjPlot::plot_model(additive_ConcM.Sim)
 
 
 ############################### exploratory #############################

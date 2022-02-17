@@ -7,6 +7,8 @@ library(lmerTest)
 library(languageR)
 library(lattice)
 library(BayesFactor)
+library(ggeffects)
+library(ggplot2)
 
 # import dataset
 GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv')
@@ -80,10 +82,54 @@ summary(onlySM)
 # also Sensorimotor strength does not have an effect on GD
 
 additive_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = GD2)
+interaction_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim * ConcM + (1|ID) + (1|Subject), data = GD2)
 
 summary(additive_ConcM.Sim) 
+summary(interaction_ConcM.Sim)
+
+performance(additive_ConcM.Sim)
+performance(interaction_ConcM.Sim)
 
 # concreteness is not significant anymore when including clozeSemSim in the model
 # somehow the two share some variance
 # this code will plot your table of interest
 sjPlot::tab_model(additive_ConcM.Sim)
+sjPlot::plot_model(additive_ConcM.Sim)
+
+# plot both concreteness and Sim
+dfConcSim <- ggpredict(additive_ConcM.Sim, terms = c("Sim", "ConcM"))
+plot(dfConcSim)
+
+# plot both Frequency and Sim
+dfFreqSim <- ggpredict(additive_ConcM.Sim, terms = c("Sim", "LogFreqZipf"))
+plot(dfFreqSim)
+
+
+GD2$ID = factor(GD2$ID)  # BayesFactor wants the random to be a factor
+GD2$Subject = factor(GD2$Subject)
+
+
+full_BF_int = lmBF(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim + ConcM + Sim:ConcM + ID + Subject,
+                   data = GD2, whichRandom = c('ID', 'Subject'))
+
+############################################
+
+chainsFull_int <- posterior(full_BF_int, iterations = 10000,columnFilter="^ID$")
+
+summary(chainsFull_int[,c("LogFreqZipf",
+                          "LEN",
+                          "PRECEDING_LogFreqZipf",
+                          "Position", 
+                          "Sim",
+                          "ConcM", 
+                          "Sim.&.ConcM")])
+
+mcmc_intervals(chainsFull_int[,c("LogFreqZipf",
+                                 "LEN",
+                                 "PRECEDING_LogFreqZipf",
+                                 "Position", 
+                                 "Sim",
+                                 "ConcM", 
+                                 "Sim.&.ConcM")],
+               prob=.5,prob_outer = .9, point_est = "mean")
+

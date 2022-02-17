@@ -307,7 +307,8 @@ def ffdgd(dur_all):
                     # fixations inside the AOI by checking the index
                     # see Footnote 1 
                     for j in range(len(dur_all[i].index)-1):
-                        if dur_all[i].index[j+1]-dur_all[i].index[j]==1:
+                        if ((dur_all[i].index[j+1]-dur_all[i].index[j]==1) &
+                            (FFD[i]>0)):
                             GD[i] += np.array(dur_all[i])[j+1]
                         else:
                             break

@@ -105,3 +105,4 @@ summary(onlySM)
 # also sensorimotor strength affects fixation durations, but less variance explained
 
 sjPlot::tab_model(lmeplau)
+sjPlot::plot_model(lmeplau)

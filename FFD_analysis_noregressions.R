@@ -113,10 +113,17 @@ summary(onlySM)
 interaction_Conc.Cloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze*ConcM + (1|ID) + (1|Subject), data = FFD2)
 additive_Conc.Cloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
+interaction_Conc.Sim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+additive_Conc.Sim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
+
+
 summary(interaction_Conc.Cloze) 
 summary(additive_Conc.Cloze) 
 anova(interaction_Conc.Cloze,additive_Conc.Cloze)
 # 
+
+sjPlot::tab_model(interaction_Conc.Sim)
+sjPlot::plot_model(interaction_Conc.SemSim)
 
 ### cannot install brms, so using BayesFactor package
 # full_brms = brm(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + (1|ID) + (1|Subject),
@@ -131,31 +138,28 @@ FFD2$ID = factor(FFD2$ID)  # BayesFactor wants the random to be a factor
 FFD2$Subject = factor(FFD2$Subject)
 
 full_BF_conc = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
-               data = FFD2, whichRandom = c('ID', 'Subject'))
+                    data = FFD2, whichRandom = c('ID', 'Subject'))
 null_BF = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ID + Subject,
                data = FFD2, whichRandom = c('ID', 'Subject'))
 full_BF_conc / null_BF
-# Concreteness has BF = 5.681746 Â±0.82% when included in the base model
+# Concreteness has BF = 5.63 ±1.07% when included in the base model
 
 
 full_BF_add = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + ID + Subject,
-               data = FFD2, whichRandom = c('ID', 'Subject'))
+                   data = FFD2, whichRandom = c('ID', 'Subject'))
 null_BF_addconc = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ID + Subject,
-               data = FFD2, whichRandom = c('ID', 'Subject'))
+                       data = FFD2, whichRandom = c('ID', 'Subject'))
 full_BF_add / null_BF_addconc
-# Concreteness has BF = 0.6264626 Â±0.87% when included in the model with cloze
+# Concreteness has 0.63 ±0.94% when included in the model with cloze
 
-
-null_BF_cloze = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + ID + Subject,
-               data = FFD2, whichRandom = c('ID', 'Subject'))
-full_BF_addconc / full_BF_conc # PF cloze parameter
-# cloze has BF = 5696847 Â±0.77% also in the model with concreteness.
+full_BF_add / full_BF_conc # PF cloze parameter
+# cloze has BF = 5649767 ±0.98% also in the model with concreteness.
 
 full_BF_int = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + cloze + ConcM + cloze:ConcM + ID + Subject,
                    data = FFD2, whichRandom = c('ID', 'Subject'))
 
 bf = full_BF_int / full_BF_add
-# bf = 0.1173778 ±10.1%
+# bf =  0.10 ±0.88%
 
 #######################################
 
