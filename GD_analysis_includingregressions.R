@@ -82,7 +82,8 @@ summary(onlySM)
 # also Sensorimotor strength does not have an effect on GD
 
 additive_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = GD2)
-interaction_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim * ConcM + (1|ID) + (1|Subject), data = GD2)
+interaction_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position +
+                             + Sim * ConcM + (1|ID) + (1|Subject), data = GD2)
 
 summary(additive_ConcM.Sim) 
 summary(interaction_ConcM.Sim)
@@ -95,6 +96,15 @@ performance(interaction_ConcM.Sim)
 # this code will plot your table of interest
 sjPlot::tab_model(additive_ConcM.Sim)
 sjPlot::plot_model(additive_ConcM.Sim)
+
+sjPlot::tab_model(interaction_ConcM.Sim, pred.labels = c('Intercept',
+                                                      'Frequency (Zipf)',
+                                                      'Length',
+                                                      'Preceding Frequency (Zipf)',
+                                                      'Position',
+                                                      'Predictability',
+                                                      'Concreteness',
+                                                      'Predictability*Concreteness'))
 
 # plot both concreteness and Sim
 dfConcSim <- ggpredict(additive_ConcM.Sim, terms = c("Sim", "ConcM"))
@@ -133,3 +143,8 @@ mcmc_intervals(chainsFull_int[,c("LogFreqZipf",
                                  "Sim.&.ConcM")],
                prob=.5,prob_outer = .9, point_est = "mean")
 
+###################### EXPLORATORY ######################
+interaction_sheikh = lmer(ms ~ LogFreqZipf*V_MeanSum*ConcM + LEN + PRECEDING_LogFreqZipf + Position +
+                               + Sim  + (1|ID) + (1|Subject), data = GD2)
+summary(interaction_sheikh)
+performance(interaction_sheikh)

@@ -104,8 +104,8 @@ summary(onlySM)
 
 # also sensorimotor strength affects fixation durations, but less variance explained
 
-interaction_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
-additive_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
+interaction_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+additive_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
 summary(interaction_Conc.SemSim) 
 summary(additive_Conc.SemSim) 
@@ -113,6 +113,7 @@ anova(interaction_Conc.SemSim,additive_Conc.SemSim)
 # 
 
 performance(additive_Conc.SemSim)
+performance(interaction_Conc.SemSim)
 
 ### cannot install brms, so using BayesFactor package
 # full_brms = brm(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + (1|ID) + (1|Subject),
@@ -144,7 +145,7 @@ add_BF / conc_BF # PF Sim parameter
 # Sim has BF = 845334.2 ±1.74% also in the model with concreteness.
 
 
-full_BF_int = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + Sim:ConcM + ID + Subject,
+full_BF_int = lmBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim + ConcM + Sim:ConcM + ID + Subject,
                    data = FFD2, whichRandom = c('ID', 'Subject'))
 
 interactionBF = full_BF_int / add_BF
@@ -188,6 +189,7 @@ chainsFull_int <- posterior(full_BF_int, iterations = 10000,columnFilter="^ID$")
 summary(chainsFull_int[,c("PRECEDING_LogFreqZipf",
                           "Position", 
                           "LogFreqZipf",
+                          "plausibility",
                           "Sim",
                           "ConcM", 
                           "Sim.&.ConcM")])
@@ -206,6 +208,7 @@ summary(chainsFull_int[,c("PRECEDING_LogFreqZipf",
 mcmc_intervals(chainsFull_int[,c("PRECEDING_LogFreqZipf",
                                  "Position",
                                  "LogFreqZipf",
+                                 "plausibility",
                                  "Sim",
                                  "ConcM",
                                  "Sim.&.ConcM")],
@@ -236,12 +239,18 @@ ggplot(dfSim, aes(x, predicted)) +
 
 
 # plot both concreteness and Sim
-dfConcSim <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "ConcM"))
-plot(dfConcSim)
+dfConcSim <- ggpredict(interaction_Conc.SemSim, terms = c("Sim", "ConcM"))
+plot(dfConcSim) +
+  labs(x="Predictability", colour="Concreteness") +
+  scale_color_discrete(labels = c("-1 SD", "Mean", "+1 SD"))
+
 
 # plot both Frequency and Sim
-dfFreqSim <- ggpredict(additive_Conc.SemSim, terms = c("Sim", "LogFreqZipf"))
-plot(dfFreqSim)
+dfFreqSim <- ggeffect(interaction_Conc.SemSim, terms = c("Sim", "LogFreqZipf"))
+plot(dfFreqSim) + 
+  labs(x="Predictability", color='Frequency') +
+  scale_color_discrete(labels = c("-1 SD", "Mean", "+1 SD"))
+
 
 
 # plot all points
@@ -257,7 +266,26 @@ ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
 sjPlot::tab_model(additive_Conc.SemSim)
 sjPlot::plot_model(additive_Conc.SemSim)
 
-sjPlot::tab_model(interaction_Conc.SemSim)
+sjPlot::tab_model(interaction_Conc.SemSim, pred.labels = c('Intercept',
+                                                           'Frequency (Zipf)',
+                                                           'Preceding Frequency (Zipf)',
+                                                           'Position',
+                                                           'Plausibility',
+                                                           'Predictability',
+                                                           'Concreteness',
+                                                           'Predictability*Concreteness'))
+
+sjPlot::plot_model(interaction_Conc.SemSim, axis.labels = c('Predictability*Concreteness',
+                                                            'Concreteness',
+                                                            'Predictability',
+                                                            'Plausibility',
+                                                            'Position',
+                                                            'Preceding Frequency (Zipf)',
+                                                            'Frequency (Zipf)',
+                                                            'Intercept'
+                                                           ))
+
+
 sjPlot::plot_model(interaction_Conc.SemSim)
 
 densityplot(profile(additive_Conc.SemSim))

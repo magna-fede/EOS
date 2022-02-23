@@ -86,12 +86,20 @@ summary(onlySM)
 
 ################ just for fun, let's look at the interaction
 additive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Sim + ConcM + (1|ID) + (1|Subject), data = GD3)
+interactive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Sim * ConcM + (1|ID) + (1|Subject), data = GD3)
 
 summary(additive_ConcM.Sim)
+summary(interactive_ConcM.Sim)
 
 sjPlot::tab_model(additive_ConcM.Sim)
 sjPlot::plot_model(additive_ConcM.Sim)
 
+sjPlot::tab_model(interactive_ConcM.Sim,pred.labels = c('Intercept',
+                                                       'Frequency (Zipf)',
+                                                       'Length',
+                                                       'Predictability',
+                                                       'Concreteness',
+                                                       'Predictability*Concreteness'))
 
 ############################### exploratory #############################
 expl = lmer(ms01 ~ LogFreqZipf + LEN + similarity + (1|ID) + (1|Subject), data = GD3)
