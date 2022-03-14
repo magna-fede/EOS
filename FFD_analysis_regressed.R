@@ -104,5 +104,9 @@ summary(onlySM)
 
 # also sensorimotor strength affects fixation durations, but less variance explained
 
-sjPlot::tab_model(lmeplau)
+sjPlot::tab_model(lmeplau,  pred.labels = c('Intercept',
+                                           'Trial order',
+                                           'Preceding Frequency (Zipf)',
+                                           'Time Prior First Fixation',
+                                           'Plausibility'))
 sjPlot::plot_model(lmeplau)

@@ -117,12 +117,18 @@ interaction_Conc.Sim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position 
 additive_Conc.Sim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
 
-summary(interaction_Conc.Cloze) 
+summary(interaction_Conc.Sim) 
 summary(additive_Conc.Cloze) 
 anova(interaction_Conc.Cloze,additive_Conc.Cloze)
 # 
 
-sjPlot::tab_model(interaction_Conc.Sim)
+sjPlot::tab_model(interaction_Conc.Sim,  pred.labels = c('Intercept',
+                                                         'Frequency (Zipf)',
+                                                         'Preceding Frequency (Zipf)',
+                                                         'Position',
+                                                         'Predictability',
+                                                         'Concreteness',
+                                                         'Predictability*Concreteness'))
 sjPlot::plot_model(interaction_Conc.SemSim)
 
 ### cannot install brms, so using BayesFactor package

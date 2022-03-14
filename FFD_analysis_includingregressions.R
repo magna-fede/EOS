@@ -12,10 +12,15 @@ library(ggplot2)
 library(performance)
 
 # import dataset
-FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
+FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withSemD.csv')
 # consider only values greater than 0
 # previously selected only fixations 80-600ms long
+
 FFD2 <- FFD2[FFD2$ms != 0, ]
+
+# no need to select, already selected the correct data in 220228,
+# while if using 220225 you need to uncomment row below 
+# FFD2 <- subset(FFD2, ms>80 & ms<600)
 
 colnames(FFD2)
 
@@ -80,13 +85,6 @@ anova(lmeBasic, lmeOnlySemSim)
 
 ################ check other confounds ###############
 
-# both similarity and plausibility seem to affect FFD
-
-lmesimcloze = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + similarity + (1|ID) + (1|Subject), data = FFD2)
-summary(lmesimcloze)
-lmeplau = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + plausibility + (1|ID) + (1|Subject), data = FFD2)
-summary(lmeplau)
-
 # but in both cases, it seems that when including cloze as a predictor, it incorporates their variance
 
 
@@ -100,12 +98,14 @@ anova(lmeBasic,onlyConc)
 
 ################# let's check sensorimotor strength
 onlySM = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + mink3_SM + (1|ID) + (1|Subject), data = FFD2)
-summary(onlySM)
+anova(lmeBasic,onlySM)
 
 # also sensorimotor strength affects fixation durations, but less variance explained
+interaction_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+additive_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
-interaction_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
-additive_Conc.SemSim = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
+interaction_Conc.SemSim_withplausibility = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+additive_Conc.SemSim_withplausibility = lmer(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim + ConcM + (1|ID) + (1|Subject), data = FFD2)
 
 summary(interaction_Conc.SemSim) 
 summary(additive_Conc.SemSim) 
@@ -114,6 +114,8 @@ anova(interaction_Conc.SemSim,additive_Conc.SemSim)
 
 performance(additive_Conc.SemSim)
 performance(interaction_Conc.SemSim)
+
+performance(interaction_Conc.SemSim_withplausibility)
 
 ### cannot install brms, so using BayesFactor package
 # full_brms = brm(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + Position + ConcM + (1|ID) + (1|Subject),
@@ -217,26 +219,26 @@ mcmc_intervals(chainsFull_int[,c("PRECEDING_LogFreqZipf",
 
 
 
-# plot only Concreteness
-dfConc <- ggeffect(additive_Conc.SemSim, terms = c("ConcM"))
-ggplot(dfConc, aes(x, predicted)) + 
-  geom_line(aes(linetype=group, color=group)) +
-  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
-  scale_linetype_manual(values = c("solid")) +
-  xlab("concreteness") +
-  ylab("FFD") +
-  ggtitle("Effects of concretess on FFD")
+# # plot only Concreteness
+# dfConc <- ggeffect(additive_Conc.SemSim, terms = c("ConcM"))
+# ggplot(dfConc, aes(x, predicted)) + 
+#   geom_line(aes(linetype=group, color=group)) +
+#   geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
+#   scale_linetype_manual(values = c("solid")) +
+#   xlab("concreteness") +
+#   ylab("FFD") +
+#   ggtitle("Effects of concretess on FFD")
 
-# plot only Sim
-dfSim <- ggeffect(additive_Conc.SemSim, terms = c("Sim"))
-ggplot(dfSim, aes(x, predicted)) + 
-  geom_line(aes(linetype=group, color=group)) +
-  geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
-  scale_linetype_manual(values = c("solid"))  +
-  xlab("cloze semantic similarity") +
-  ylab("FFD") +
-  ggtitle("Effects of predictability on FFD")
-
+# # plot only Sim
+# dfSim <- ggeffect(additive_Conc.SemSim, terms = c("Sim"))
+# ggplot(dfSim, aes(x, predicted)) + 
+#   geom_line(aes(linetype=group, color=group)) +
+#   geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
+#   scale_linetype_manual(values = c("solid"))  +
+#   xlab("cloze semantic similarity") +
+#   ylab("FFD") +
+#   ggtitle("Effects of predictability on FFD")
+# 
 
 # plot both concreteness and Sim
 dfConcSim <- ggpredict(interaction_Conc.SemSim, terms = c("Sim", "ConcM"))
@@ -253,10 +255,10 @@ plot(dfFreqSim) +
 
 
 
-# plot all points
-ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
-  geom_point(size = 1)+
-  stat_smooth(method="lm",se=FALSE)
+# # plot all points
+# ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
+#   geom_point(size = 1)+
+#   stat_smooth(method="lm",se=FALSE)
 
 # this is informative in that it suggests that it seems that data more variable in 
 # low Sim sentences then in high Sim sentences
@@ -266,7 +268,7 @@ ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
 sjPlot::tab_model(additive_Conc.SemSim)
 sjPlot::plot_model(additive_Conc.SemSim)
 
-sjPlot::tab_model(interaction_Conc.SemSim, pred.labels = c('Intercept',
+sjPlot::tab_model(interaction_Conc.SemSim_withplausibility, pred.labels = c('Intercept',
                                                            'Frequency (Zipf)',
                                                            'Preceding Frequency (Zipf)',
                                                            'Position',
@@ -275,7 +277,7 @@ sjPlot::tab_model(interaction_Conc.SemSim, pred.labels = c('Intercept',
                                                            'Concreteness',
                                                            'Predictability*Concreteness'))
 
-sjPlot::plot_model(interaction_Conc.SemSim, axis.labels = c('Predictability*Concreteness',
+sjPlot::plot_model(interaction_Conc.SemSim_withplausibility, axis.labels = c('Predictability*Concreteness',
                                                             'Concreteness',
                                                             'Predictability',
                                                             'Plausibility',
@@ -284,8 +286,33 @@ sjPlot::plot_model(interaction_Conc.SemSim, axis.labels = c('Predictability*Conc
                                                             'Frequency (Zipf)',
                                                             'Intercept'
                                                            ))
+sjPlot::tab_model(interaction_Conc.SemSim, pred.labels = c('Intercept',
+                                                                            'Frequency (Zipf)',
+                                                                            'Preceding Frequency (Zipf)',
+                                                                            'Position',
+                                                                            #'Plausibility',
+                                                                            'Predictability',
+                                                                            'Concreteness',
+                                                                            'Predictability*Concreteness'))
 
+sjPlot::plot_model(interaction_Conc.SemSim, axis.labels = c('Predictability*Concreteness',
+                                                                             'Concreteness',
+                                                                             'Predictability',
+                                                                             #'Plausibility',
+                                                                             'Position',
+                                                                             'Preceding Frequency (Zipf)',
+                                                                             'Frequency (Zipf)',
+                                                                             'Intercept'
+))
 
 sjPlot::plot_model(interaction_Conc.SemSim)
 
 densityplot(profile(additive_Conc.SemSim))
+
+
+# exploratory
+interaction_V_MeanSum = lmer(ms ~ V_MeanSum + LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+summary(interaction_V_MeanSum)
+
+interaction_A_MeanSum = lmer(ms ~ A_MeanSum + LogFreqZipf + PRECEDING_LogFreqZipf + Position + plausibility + Sim*ConcM + (1|ID) + (1|Subject), data = FFD2)
+summary(interaction_A_MeanSum)

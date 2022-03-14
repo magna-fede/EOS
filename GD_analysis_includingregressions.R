@@ -11,8 +11,8 @@ library(ggeffects)
 library(ggplot2)
 
 # import dataset
-GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv')
-GD2 <- GD2[GD2$ms != 0, ]
+GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_withSemD.csv')
+GD2 <- GD2[GD2$ms > 80, ]
 
 # GD2 <- GD2[!(GD2$Subject== 3 | GD2$Subject== 14 | GD2$Subject== 33 | GD2$Subject== 34 ),]
 # let's try some of the predictors influence on fixation duration
@@ -78,7 +78,7 @@ anova(lmeBasicGD2,onlyConc)
 
 ################# let's check sensorimotor strength
 onlySM = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + mink3_SM + (1|ID) + (1|Subject), data = GD2)
-summary(onlySM)
+anova(lmeBasicGD2,onlySM)
 # also Sensorimotor strength does not have an effect on GD
 
 additive_ConcM.Sim = lmer(ms ~ LogFreqZipf + LEN + PRECEDING_LogFreqZipf + Position + Sim + ConcM + (1|ID) + (1|Subject), data = GD2)
@@ -144,7 +144,15 @@ mcmc_intervals(chainsFull_int[,c("LogFreqZipf",
                prob=.5,prob_outer = .9, point_est = "mean")
 
 ###################### EXPLORATORY ######################
-interaction_sheikh = lmer(ms ~ LogFreqZipf*V_MeanSum*ConcM + LEN + PRECEDING_LogFreqZipf + Position +
+interaction_sheikh = lmer(ms ~ LogFreqZipf*A_MeanSum*ConcM + LEN + PRECEDING_LogFreqZipf + Position +
                                + Sim  + (1|ID) + (1|Subject), data = GD2)
 summary(interaction_sheikh)
 performance(interaction_sheikh)
+
+interaction_A = lmer(ms ~ LogFreqZipf + A_MeanSum + LEN + PRECEDING_LogFreqZipf + Position +
+                            + Sim*ConcM  + (1|ID) + (1|Subject), data = GD2)
+summary(interaction_A)
+
+interaction_V = lmer(ms ~ LogFreqZipf + V_MeanSum + LEN + PRECEDING_LogFreqZipf + Position +
+                       + Sim*ConcM  + (1|ID) + (1|Subject), data = GD2)
+summary(interaction_A)

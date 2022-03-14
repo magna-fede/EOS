@@ -568,12 +568,12 @@ for dat,name in zip([dur,
     for i,df in enumerate(dat):
         participants[i] = df
     
-    with open(f"U:/AnEyeOnSemantics/41analysis/{name}.P", 'wb') as outfile:
+    with open(f"U:/AnEyeOnSemantics/41analysis/{name}_withSemD.P", 'wb') as outfile:
         pickle.dump(participants,outfile)  
 
-pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv',index=False)
+pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withSemD.csv',index=False)
 
-pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv',index=False)
+pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_withSemD.csv',index=False)
 
 ##################
 ### Footnote 1 ###

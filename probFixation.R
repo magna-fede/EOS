@@ -21,7 +21,10 @@ library(ggeffects)
 library(ggplot2)
 
 # import the dataset
-GD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv')
+GD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_220225.csv')
+# using different dataset because not considering as skipped words that were fixated for less than 80 or more than 600
+# (because in preprocessing script are turned to zero)
+# so if a word's fixation is anomalous, it's still considered as fixated.
 
 # 1 if word was fixated, 0 if not
 GD3$ms01 <- ifelse(GD3$ms > 0, 1, 0)
@@ -49,7 +52,7 @@ summary(posGD3)
 # Position doesn't affect p(fix), so not including it
 
 ######## this is our basic model ###########
-lmeBasicGD3 = lmer(ms01 ~ LogFreqZipf + LEN  + (1|ID) + (1|Subject), data = GD3)
+lmeBasicGD3 = lmer(ms01 ~ LogFreqZipf + LEN + Position + (1|ID) + (1|Subject), data = GD3)
 summary(lmeBasicGD3)
 
 ################ introduce Predictability(a priori), cloze, and semanticpredictability(=sim) ###############
@@ -80,13 +83,13 @@ anova(lmeBasicGD3,onlyConc)
 # concreteness seems not to affect the probability to fixate a word
 
 ################# let's check sensorimotor strength
-onlySM = lmer(ms01 ~ LogFreqZipf + LEN + mink3_SM + (1|ID) + (1|Subject), data = GD3)
-summary(onlySM)
+onlySM = lmer(ms01 ~ LogFreqZipf + LEN + Position + mink3_SM + (1|ID) + (1|Subject), data = GD3)
+anova(lmeBasicGD3,onlySM)
 # sensorimotor strength no
 
 ################ just for fun, let's look at the interaction
-additive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Sim + ConcM + (1|ID) + (1|Subject), data = GD3)
-interactive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Sim * ConcM + (1|ID) + (1|Subject), data = GD3)
+additive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Position + Sim + ConcM + (1|ID) + (1|Subject), data = GD3)
+interactive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Position + Sim * ConcM + (1|ID) + (1|Subject), data = GD3)
 
 summary(additive_ConcM.Sim)
 summary(interactive_ConcM.Sim)
@@ -97,12 +100,17 @@ sjPlot::plot_model(additive_ConcM.Sim)
 sjPlot::tab_model(interactive_ConcM.Sim,pred.labels = c('Intercept',
                                                        'Frequency (Zipf)',
                                                        'Length',
+                                                       'Position',
                                                        'Predictability',
                                                        'Concreteness',
                                                        'Predictability*Concreteness'))
 
 ############################### exploratory #############################
-expl = lmer(ms01 ~ LogFreqZipf + LEN + similarity + (1|ID) + (1|Subject), data = GD3)
+expl = lmer(ms01 ~ LogFreqZipf + A_MeanSum + LEN + Sim + ConcM + Position + (1|ID) + (1|Subject), data = GD3)
 summary(expl)
 
-anova(lmeBasicGD3,expl)
+expl2 = lmer(ms01 ~ LogFreqZipf + V_MeanSum + LEN + Sim + Position + (1|ID) + (1|Subject), data = GD3)
+summary(expl2)
+
+# careful! more likely to fixate more arousing words
+anova(additive_ConcM.Sim,expl)
