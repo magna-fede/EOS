@@ -13,7 +13,10 @@ library(ggplot2)
 
 # import dataset
 FFD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
+# using this dataset because in this case we are considering words that have been fixated even for anomalous
+# periods (i.e., <80 or >600 ms) as fixated. on the other hand
 FFD3 <- FFD3[FFD3$ms != 0, ]
+FFD3 <- subset(FFD3, ms>80 & ms<600)
 # FFD3 <- FFD3[!(FFD3$Subject== 3 | FFD3$Subject== 14 | FFD3$Subject== 33 | FFD3$Subject== 34 ),]
 
 # rescale trialnr
@@ -88,7 +91,14 @@ summary(interactive)
 
 performance(interactive)
 
-sjPlot::tab_model(interactive)
+sjPlot::tab_model(interactive,pred.labels = c('Intercept',
+                                              'N previous fixations',
+                                              'Trial order',
+                                              'PRECEDING Length',
+                                              'Position',
+                                              'Predictability',
+                                              'Concreteness',
+                                              'Predictability*Concreteness'))
 sjPlot::plot_model(interactive)
 
 # variables that affect probability of making a regression:

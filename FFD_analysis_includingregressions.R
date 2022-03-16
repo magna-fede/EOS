@@ -183,6 +183,34 @@ interactionBF
 #   Intercept only 
 # ---
 #   Bayes factor type: BFlinearModel, JZS
+# 
+# bf = generalTestBF(ms ~ LogFreqZipf + PRECEDING_LogFreqZipf + plausibility + Position + 
+#                      SemD * Sim * ConcM + Subject + ID, data=FFD2,
+#                    whichRandom=c('ID', 'Subject'), neverExclude=c('ID', 'Subject'))
+# 
+# ### Save an object to a file
+# # saveRDS(bf, file = "U:/AnEyeOnSemantics/41analysis/BF_withSemD.rds")
+# ### Restore the object
+# bf2 = readRDS(file = "U:/AnEyeOnSemantics/41analysis/BF_withSemD.rds")
+# head(bf2, n=10)
+# Bayes factor analysis
+# --------------
+# [1] PRECEDING_LogFreqZipf + Sim + Subject + ID                                   : 1.827781e+291 ±0.84%
+# [2] PRECEDING_LogFreqZipf + Position + Sim + Subject + ID                        : 1.521895e+291 ±0.6%
+# [3] PRECEDING_LogFreqZipf + Sim + ConcM + Subject + ID                           : 1.204448e+291 ±0.52%
+# [4] PRECEDING_LogFreqZipf + Position + Sim + ConcM + Subject + ID                : 1.18689e+291  ±0.98%
+# [5] PRECEDING_LogFreqZipf + plausibility + Sim + ConcM + Subject + ID            : 1.158824e+291 ±0.63%
+# [6] Sim + Subject + ID                                                           : 1.15757e+291  ±1.18%
+# [7] PRECEDING_LogFreqZipf + plausibility + Position + Sim + ConcM + Subject + ID : 1.108098e+291 ±0.49%
+# [8] plausibility + Sim + ConcM + Subject + ID                                    : 1.08734e+291  ±0.64%
+# [9] Sim + ConcM + Subject + ID                                                   : 1.083316e+291 ±1.26%
+# [10] LogFreqZipf + PRECEDING_LogFreqZipf + Position + Sim + Subject + ID         : 9.482608e+290 ±0.55%
+# 
+# Against denominator:
+#   Intercept only 
+# ---
+#   Bayes factor type: BFlinearModel, JZS
+# 
 
 ############################################
 
