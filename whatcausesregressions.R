@@ -12,7 +12,7 @@ library(ggeffects)
 library(ggplot2)
 
 # import dataset
-FFD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
+FFD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withSemDAoA.csv')
 # using this dataset because in this case we are considering words that have been fixated even for anomalous
 # periods (i.e., <80 or >600 ms) as fixated. on the other hand
 FFD3 <- FFD3[FFD3$ms != 0, ]
@@ -107,3 +107,9 @@ sjPlot::plot_model(interactive)
 # Position (more likely at later positions) 
 # time_before_ff (less likely if spent more time in the sentence)
 # cloze (less likely for higher cloze - aka more predictable)
+
+
+# exploratory
+interactiveSemDonly = glmer(regressed ~ n_prior_fix + trialnrscaled + LENprec + Position + Sim *SemD + (1|ID) + (1|Subject), data = FFD3, family=binomial)#
+summary(interactiveSemDonly) # same direction as concreteness
+

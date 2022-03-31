@@ -11,7 +11,7 @@ library(ggeffects)
 library(ggplot2)
 
 # import dataset
-GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_withSemD.csv')
+GD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_withSemDAoA.csv')
 GD2 <- GD2[GD2$ms > 80, ]
 
 # GD2 <- GD2[!(GD2$Subject== 3 | GD2$Subject== 14 | GD2$Subject== 33 | GD2$Subject== 34 ),]

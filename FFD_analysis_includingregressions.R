@@ -12,7 +12,7 @@ library(ggplot2)
 library(performance)
 
 # import dataset
-FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withSemD.csv')
+FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withSemDAoA.csv')
 # consider only values greater than 0
 # previously selected only fixations 80-600ms long
 
