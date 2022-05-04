@@ -430,7 +430,7 @@ to_norm = (to_norm-to_norm.mean())/to_norm.std()
 stimuliALL_norm = stimuliALL[['Word','ID']].join(to_norm)
 
 # import data from the participants
-base_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/data_fromLab/"
+base_dir = "//cbsu/data/Imaging/hauk/users/fm02/EOS_data/EOS_data_fromLab"
 
 participant = [
         101, 
