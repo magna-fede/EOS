@@ -21,7 +21,7 @@ library(ggeffects)
 library(ggplot2)
 
 # import the dataset
-GD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_220225.csv')
+GD3 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_0506.csv')
 # using different dataset because not considering as skipped words that were fixated for less than 80 or more than 600
 # (because in preprocessing script are turned to zero)
 # so if a word's fixation is anomalous, it's still considered as fixated.
@@ -91,8 +91,18 @@ anova(lmeBasicGD3,onlySM)
 additive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Position + Sim + ConcM + (1|ID) + (1|Subject), data = GD3)
 interactive_ConcM.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Position + Sim * ConcM + (1|ID) + (1|Subject), data = GD3)
 
+additive_mink.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Position + Sim + mink3_SM + (1|ID) + (1|Subject), data = GD3)
+interactive_mink.Sim = lmer(ms01 ~ LogFreqZipf + LEN + Position + Sim * mink3_SM + (1|ID) + (1|Subject), data = GD3)
+
 summary(additive_ConcM.Sim)
 summary(interactive_ConcM.Sim)
+
+summary(additive_mink.Sim)
+summary(interactive_mink.Sim)
+
+library(performance)
+performance(interactive_mink.Sim)
+performance(interactive_ConcM.Sim)
 
 sjPlot::tab_model(additive_ConcM.Sim)
 sjPlot::plot_model(additive_ConcM.Sim)

@@ -12,7 +12,7 @@ library(ggplot2)
 library(performance)
 
 # import dataset
-FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv')
+FFD2 <- read.csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withSemDAoA.csv')
 # consider only values greater than 0
 # previously selected only fixations 80-600ms long
 
@@ -282,6 +282,24 @@ plot(dfFreqSim) +
   scale_color_discrete(labels = c("-1 SD", "Mean", "+1 SD"))
 
 
+dfConcSim <- ggeffect(interaction_Conc.SemSim_withplausibility, terms = c("Sim", "ConcM"))
+plot(dfConcSim) +
+  labs(x="Predictability",
+       colour="Concreteness",
+       title = "Predictability * Concreteness") +
+  scale_color_discrete(labels = c("-1 SD", "Mean", "+1 SD")) +
+  theme_ggeffects(base_size = 20, base_family = "")
+
+
+# plot both Frequency and Sim
+dfFreqSim <- ggeffect(interaction_Conc.SemSim_withplausibility, terms = c("Sim", "LogFreqZipf"))
+plot(dfFreqSim) + 
+  labs(x="Predictability",
+       color='Frequency',
+       title = "Predictability * Frequency") +
+  scale_color_discrete(labels = c("-1 SD", "Mean", "+1 SD")) +
+  theme_ggeffects(base_size = 20, base_family = "")
+
 
 # # plot all points
 # ggplot(additive_Conc.SemSim,aes(y=ms,x=Sim,color=ConcM))+
@@ -323,10 +341,10 @@ sjPlot::tab_model(interaction_Conc.SemSim, pred.labels = c('Intercept',
                                                                             'Concreteness',
                                                                             'Predictability*Concreteness'))
 
-sjPlot::plot_model(interaction_Conc.SemSim, axis.labels = c('Predictability*Concreteness',
+sjPlot::plot_model(interaction_Conc.SemSim_withplausibility, axis.labels = c('Predictability*Concreteness',
                                                                              'Concreteness',
                                                                              'Predictability',
-                                                                             #'Plausibility',
+                                                                             'Plausibility',
                                                                              'Position',
                                                                              'Preceding Frequency (Zipf)',
                                                                              'Frequency (Zipf)',
