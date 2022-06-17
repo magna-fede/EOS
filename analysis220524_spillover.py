@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 25 11:40:29 2021
+
 @author: fm02
 """
 
@@ -103,7 +104,7 @@ def read_edf_plain(filename):
     return data
 
 
-def fixAOI(data_edf,data_plain):
+def fixAOI(data_edf, data_plain):
     """Get all fixations within AOI. Checks that are not followed by a regression
     after the first fixation within the AOI + trials that do not contain
     a blink or error"""
@@ -112,6 +113,7 @@ def fixAOI(data_edf,data_plain):
     # respect certain inclusion criteria
     # 
     dur_all = []
+    spillover = []
     regressed = []
     time_before_fix = []
     tot_number_fixation = []
@@ -124,7 +126,7 @@ def fixAOI(data_edf,data_plain):
                                                     'x',
                                                     'y'])
         tot_number_fixation.append(len(pd_fix))
-        
+        spillover.append(np.nan)
         # exclude those trials where all fixations are outside the screen
         # it used to happe if there was an error in the gaze position detection
         # it should not be a problem now, considering that gaze is required
@@ -133,15 +135,18 @@ def fixAOI(data_edf,data_plain):
             dur_all.append('Error in fixation detection')
             time_before_fix.append(np.nan)
             regressed.append(np.nan)
+
         elif (((pd_fix['y'] < 0).all()) or ((pd_fix['y'] > DISPSIZE[1]).all())):
             dur_all.append('Error in fixation detection')
             time_before_fix.append(np.nan)
             regressed.append(np.nan)
+
         # or when no fixations have been detected
         elif len(pd_fix)<2:
             dur_all.append('Error in fixation detection')
             time_before_fix.append(np.nan)
             regressed.append(np.nan)
+            
         else:
             # consider only fixations following a the first leftmost fixation
 
@@ -208,14 +213,31 @@ def fixAOI(data_edf,data_plain):
                                                   (pd_fix['y']<target_y[1])
                                                   ])
                         time_before_fix.append(pd_fix['start'][fixAOI.index[0]] - pd_fix['start'][0])
+                        spillover[-1] = pd_fix['duration'][dur_all[-1].index[0]+1]
+                        
+                        # this loops check which is the first fixation following 
+                        # multiple fixations on AOI
+                        if len(dur_all[-1]) > 1:
+                            for j in range(len(dur_all[-1].index)-1):
+                                # this checks they are continuous fixations
+                                if dur_all[-1].index[j+1]-dur_all[-1].index[j]==1:
+                                    # and this checks it's not the last fixation
+                                    if dur_all[-1].index[j+1] < pd_fix.index[-1]:
+                                        spillover[-1] = pd_fix['duration'][dur_all[-1].index[j]+2]
+                                else:     
+                                    
+                                    break
+
+                            
                     # check if there is a regression to BEFORE the target area
                     # and save it in the relevant list 
                         if (pd_fix['x'].iloc[fixAOI.index[0]+1]>target_x[0]):
-                        # if there wasn't a regression, save as 0
+                            # if there wasn't a regression, save as 0
                             regressed.append(0)
                         else:
-                        # if there was a regression, save as 1
+                            # if there was a regression, save as 1
                             regressed.append(1)
+
                     else:
                     # if this is the last fixation, than there is no regression
                     # so, get the fixations (otherwise it will give an error
@@ -261,13 +283,14 @@ def fixAOI(data_edf,data_plain):
                         dur_all[-1] = 'There was a blink'
                         time_before_fix[-1] = np.nan
                         regressed[-1] = np.nan
+                        spillover[-1] = np.nan
                         
     # returnign a list of series, containing all trials
     # each series contains all the fixations within AOI for that trial
     # each element consist in index = ordinal number of fixation for that trial
     # (eg if the first fixation within AOI was the 6th, index=6)
     # duration = duration of the fixation in ms
-    return dur_all, regressed, time_before_fix, tot_number_fixation
+    return dur_all, regressed, time_before_fix, tot_number_fixation, spillover
 
 
 # function to get both FFD and GD
@@ -301,10 +324,9 @@ def ffdgd(dur_all):
                     FFD[i] = np.array(dur_all[i])[0]
                     GD[i] = np.array(dur_all[i])[0]
                     fixated[i] = 1
-                else:
+                elif np.array(dur_all[i])[0]>=600:
                     FFD[i] = np.nan
-                    GD[i] = np.nan  
-                    fixated = np.nan
+                    GD[i] = np.nan   
                      
                 if len(dur_all[i])>1:
                     # if more than one, check whether they are consecutive
@@ -319,7 +341,7 @@ def ffdgd(dur_all):
                 n_prior_fixations[i] = dur_all[i].index[0]
     return FFD, GD, fixated, n_prior_fixations
         
-def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior_fix):
+def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior_fix, spillover=None):
     """Include single word and sentence level statistics"""
     eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -333,6 +355,9 @@ def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior
         eye_all_i['regressed'] = regressed[i]
         eye_all_i['n_tot_fix'] = tot_number_fixation[i]
         eye_all_i['n_prior_fix'] = n_prior_fix[i]
+        
+        if spillover:
+            eye_all_i['spillover'] = spillover[i]
         
         # check if need to exclude any trial
         if participant[i] in exclude:
@@ -371,7 +396,7 @@ def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior
         eyedata_all[-1] = eyedata_all[-1][eyedata_all[-1].iloc[:,0].notna()]    
     return eyedata_all
 
-def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, n_prior_fix):
+def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, n_prior_fix, spillover=None):
     """Supply the participants gd/ffd to obtain a gd/ffd_all that is mean_centred"""
     norm_eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -394,7 +419,8 @@ def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, 
         normalized_all_i['n_prior_fix'] = (normalized_all_i['n_prior_fix'] - \
                                               normalized_all_i['n_prior_fix'].mean() \
                                                   ) / normalized_all_i['n_prior_fix'].std()            
-
+        if spillover:
+            normalized_all_i['spillover'] = spillover[i]
             
         # check if need to exclude any trial
         if participant[i] in exclude:
@@ -502,19 +528,20 @@ participant = [
         ]
 
 data = {}
-data_plain = {}
+dat_plain = {}
 
 for i in participant:
     print(f'Reading EDF data participant {i}')
     data[i] = read_edf(f"{base_dir}/{i}/{i}.asc",
                        "STIMONSET","STIMOFFSET")
-    data_plain[i] = read_edf_plain(f"{base_dir}/{i}/{i}.asc")
+    dat_plain[i] = read_edf_plain(f"{base_dir}/{i}/{i}.asc")
 
 # prefix nrgr = no_regressions
 dur = []
 regressed = []
 time_before = []
 nfix = []
+spillover = []
 
 ffd = []
 gd = []
@@ -525,8 +552,8 @@ nprior_fixs = []
 # loop over participants  
 for subject in data.keys():
     print(f'Extracting data participant {subject}')
-    dur_i, regressed_i, time_before_i, nfix_i = fixAOI(data[subject],
-                                                        data_plain[subject])
+    dur_i, regressed_i, time_before_i, nfix_i, spillover_i = fixAOI(data[subject],
+                                                        dat_plain[subject])
     
     FFD_i, GD_i, fixated_i, nprior_fixs_i = ffdgd(dur_i)
     
@@ -534,16 +561,18 @@ for subject in data.keys():
     regressed.append(regressed_i)
     time_before.append(time_before_i)
     nfix.append(nfix_i)
+    spillover.append(spillover_i)
     
     ffd.append(FFD_i)
     gd.append(GD_i)
     prfix.append(fixated_i)
     nprior_fixs.append(nprior_fixs_i)    
 
-gd_all = attach_info(gd, regressed, time_before, nfix, nprior_fixs)
-ffd_all = attach_info(ffd, regressed, time_before, nfix, nprior_fixs)
-norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix, nprior_fixs)
-norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix, nprior_fixs)
+gd_all = attach_info(gd, regressed, time_before, nfix, nprior_fixs, spillover)
+ffd_all = attach_info(ffd, regressed, time_before, nfix, nprior_fixs, spillover)
+norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix, nprior_fixs, spillover)
+norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix, nprior_fixs, spillover)
+
 
 pis = pd.read_excel("//cbsu/data/Imaging/hauk/users/fm02/EOS_data/Demographic_info.xlsx",
                     usecols=["Participant ID",
@@ -594,12 +623,12 @@ for dat,name in zip([dur,
     for i,df in enumerate(dat):
         participants[i] = df
     
-    with open(f"U:/AnEyeOnSemantics/41analysis/{name}.P", 'wb') as outfile:
+    with open(f"U:/AnEyeOnSemantics/41analysis/{name}_withspillover.P", 'wb') as outfile:
         pickle.dump(participants,outfile)  
 
-pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv',index=False)
+pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_withspillover.csv',index=False)
 
-pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv',index=False)
+pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_withspillover.csv',index=False)
 
 ##################
 ### Footnote 1 ###
@@ -625,3 +654,5 @@ pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollect
 ### Are there better ways to deal with this? e.g., consider the sum of them
 ### also when calculating FFD? -> i.e., do them count as one fixation, two
 ### consecutive fixations or half way?
+
+
