@@ -294,18 +294,18 @@ def ffdgd(dur_all):
                 GD[i] = np.nan
                 fixated[i] = np.nan
         else:
-            # check if there is at least one fixation in AOI, otherwise FFD=GD=0                
+            # check if there is at least one fixation in AOI, otherwise FFD=GD=fixated=0                
             if len(dur_all[i])>0:
                 # check if the fixation is btween 80-600ms long
                 if (np.array(dur_all[i])[0]>80 and np.array(dur_all[i])[0]<600):
                     FFD[i] = np.array(dur_all[i])[0]
                     GD[i] = np.array(dur_all[i])[0]
                     fixated[i] = 1
-                else:
+                elif np.array(dur_all[i])[0]>=600:
                     FFD[i] = np.nan
-                    GD[i] = np.nan  
-                    fixated = np.nan
-                     
+                    GD[i] = np.nan   
+                    fixated[i] = 1
+
                 if len(dur_all[i])>1:
                     # if more than one, check whether they are consecutive
                     # fixations inside the AOI by checking the index
@@ -319,7 +319,7 @@ def ffdgd(dur_all):
                 n_prior_fixations[i] = dur_all[i].index[0]
     return FFD, GD, fixated, n_prior_fixations
         
-def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior_fix):
+def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior_fix, fixated):
     """Include single word and sentence level statistics"""
     eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -333,6 +333,7 @@ def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior
         eye_all_i['regressed'] = regressed[i]
         eye_all_i['n_tot_fix'] = tot_number_fixation[i]
         eye_all_i['n_prior_fix'] = n_prior_fix[i]
+        eye_all_i['fixated'] = fixated[i]
         
         # check if need to exclude any trial
         if participant[i] in exclude:
@@ -371,7 +372,7 @@ def attach_info(eyedata, regressed, time_before_ff, tot_number_fixation, n_prior
         eyedata_all[-1] = eyedata_all[-1][eyedata_all[-1].iloc[:,0].notna()]    
     return eyedata_all
 
-def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, n_prior_fix):
+def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, n_prior_fix, fixated):
     """Supply the participants gd/ffd to obtain a gd/ffd_all that is mean_centred"""
     norm_eyedata_all = []
     for i,participantdata in enumerate(eyedata):
@@ -394,7 +395,7 @@ def attach_mean_centred(eyedata,regressed, time_before_ff, tot_number_fixation, 
         normalized_all_i['n_prior_fix'] = (normalized_all_i['n_prior_fix'] - \
                                               normalized_all_i['n_prior_fix'].mean() \
                                                   ) / normalized_all_i['n_prior_fix'].std()            
-
+        normalized_all_i['fixated'] = fixated[i]
             
         # check if need to exclude any trial
         if participant[i] in exclude:
@@ -520,7 +521,7 @@ ffd = []
 gd = []
 prfix = []
 nprior_fixs = []
-
+fixated = []
 
 # loop over participants  
 for subject in data.keys():
@@ -539,11 +540,12 @@ for subject in data.keys():
     gd.append(GD_i)
     prfix.append(fixated_i)
     nprior_fixs.append(nprior_fixs_i)    
+    fixated.append(fixated_i)
 
-gd_all = attach_info(gd, regressed, time_before, nfix, nprior_fixs)
-ffd_all = attach_info(ffd, regressed, time_before, nfix, nprior_fixs)
-norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix, nprior_fixs)
-norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix, nprior_fixs)
+gd_all = attach_info(gd, regressed, time_before, nfix, nprior_fixs, fixated)
+ffd_all = attach_info(ffd, regressed, time_before, nfix, nprior_fixs, fixated)
+norm_gd_all = attach_mean_centred(gd, regressed, time_before, nfix, nprior_fixs, fixated)
+norm_ffd_all = attach_mean_centred(ffd, regressed, time_before, nfix, nprior_fixs, fixated)
 
 pis = pd.read_excel("//cbsu/data/Imaging/hauk/users/fm02/EOS_data/Demographic_info.xlsx",
                     usecols=["Participant ID",
@@ -594,12 +596,12 @@ for dat,name in zip([dur,
     for i,df in enumerate(dat):
         participants[i] = df
     
-    with open(f"U:/AnEyeOnSemantics/41analysis/{name}.P", 'wb') as outfile:
+    with open(f"U:/AnEyeOnSemantics/41analysis/{name}_final.P", 'wb') as outfile:
         pickle.dump(participants,outfile)  
 
-pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41.csv',index=False)
+pd.concat(norm_ffd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_ffd_41_final.csv',index=False)
 
-pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41.csv',index=False)
+pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollection/Data_Results/data_forR/norm_gd_41_final.csv',index=False)
 
 ##################
 ### Footnote 1 ###
@@ -622,6 +624,8 @@ pd.concat(norm_gd_all).to_csv('C:/Users/fm02/OwnCloud/EOS_EyeTrackingDataCollect
 # 12 123      20
 # 13 417      28
 # 14 149      39
-### Are there better ways to deal with this? e.g., consider the sum of them
-### also when calculating FFD? -> i.e., do them count as one fixation, two
-### consecutive fixations or half way?
+
+
+### Footnote 2 ###
+### For Probability of fixation, if a participant first fixation is less than 80, that counts as skipped,
+### if that is longer than 600ms, that is not considered (FFD and GD counts as nan, so it is skipped).
